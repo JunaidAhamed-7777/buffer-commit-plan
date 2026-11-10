@@ -19,7 +19,7 @@ The official judging dimensions are usefulness, craft, and originality. Add feas
 
 **Specific user:** a solo workshop creator with independently written drafts across two channels. A venue or registration URL changes after those drafts were prepared. The job is to repair every selected occurrence, while keeping the distinct writing intact.
 
-**Documented friction:** Buffer's scheduling FAQ says posts shared to multiple channels must be edited individually after creation. That supports a workflow gap. It does not prove users will adopt another app, pay, or tolerate fact-linking setup. [FAQ](https://support.buffer.com/articles/scheduling-posts-4Qdld7giAZ).
+**Documented friction:** Buffer's scheduling FAQ says existing scheduled multi-channel posts must be edited individually. This supports a nearby workflow gap. Its relevance to our deliberately draft-only product is an inference, not proof of the same restriction in every native draft workflow. It does not prove users will adopt another app, pay, or tolerate fact-linking setup. [FAQ](https://support.buffer.com/articles/scheduling-posts-4Qdld7giAZ).
 
 **Demo clarity:** one fact changes, several small diffs appear, one stale draft is withheld, and real Buffer read-backs prove the two accepted edits. The viewer can understand both the benefit and the restraint without a technical lecture.
 
