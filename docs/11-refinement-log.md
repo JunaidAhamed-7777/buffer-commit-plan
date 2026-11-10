@@ -50,6 +50,14 @@ Added authorization gates, OAuth-first spike, explicit privacy model, failure ma
 
 Decision: stop this documentation pass when links, consistency and remote contents are checked. The next meaningful work is either a targeted review of new evidence or separately authorized implementation. Do not keep adding speculative features merely to make more commits.
 
+## Pass 9 · Independent protocol review
+
+An adversarial review found a consumed-approval ambiguity, eligibility checks that could miss newly added media/annotations, and wording that could allow a retry while an earlier request remained in flight.
+
+Decision: approval is consumed once into an immutable operation manifest; successful item bookkeeping cannot invalidate the remaining items. Re-run all supported-content checks before each dispatch. Unknown writes stay blocked without sufficient provider completion evidence, even if the user approves again. Added a test for the unavoidable between-read-and-write race and qualified acceptance claims to observed preflight changes.
+
+The review also narrowed the source claim: Buffer's documented individual-edit friction concerns scheduled multi-channel posts. Usefulness for our draft-only MVP is a related hypothesis, not directly established by that FAQ. Keep that gap visible and validate it before making a productivity claim.
+
 ## Current design decisions
 
 | Decision | Rationale | Reopen only if |
