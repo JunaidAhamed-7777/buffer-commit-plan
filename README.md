@@ -10,6 +10,8 @@ The local app includes a sample workspace and a configurable Buffer connection. 
 
 The showcase explains the workflow and lets visitors review and apply edits to fictional drafts in their browser. It uses the same patch planner as the app. Build it with `npm run build:showcase` and serve `dist/showcase`. [Vercel Hobby setup](docs/development/getting-started.md#publish-the-showcase-on-vercel)
 
+[Live showcase](https://patchwork-showcase.vercel.app/) · [Privacy policy](https://patchwork-showcase.vercel.app/privacy.html)
+
 ## Try the sample
 
 With Node.js 24.2 or later and npm 11 or later, run:
