@@ -14,18 +14,18 @@ The proposed distinction is **fact-linked, reviewed repair**, not another captio
 
 ## Read in this order
 
-1. [Event rules and action boundaries](docs/01-event-and-boundaries.md)
-2. [Idea tournament and differentiation](docs/02-idea-tournament.md)
-3. [Product specification and scope](docs/03-product-spec.md)
-4. [Experience and two-minute demo](docs/04-experience-and-demo.md)
-5. [API feasibility and unknowns](docs/05-api-feasibility.md)
-6. [Architecture and write safety](docs/06-architecture.md)
-7. [Evaluation and acceptance cases](docs/07-evaluation.md)
-8. [Build roadmap and stop gates](docs/08-roadmap.md)
-9. [Threat model and privacy](docs/09-security-and-privacy.md)
-10. [Submission evidence checklist](docs/10-submission-checklist.md)
-11. [Refinement and decision log](docs/11-refinement-log.md)
-12. [Research sources and open questions](docs/12-sources-and-questions.md)
+1. [Event rules and action boundaries](docs/contest/rules.md)
+2. [Idea tournament and differentiation](docs/planning/idea-tournament.md)
+3. [Product specification and scope](docs/product/specification.md)
+4. [Experience and two-minute demo](docs/product/experience-and-demo.md)
+5. [API feasibility and unknowns](docs/engineering/buffer-api.md)
+6. [Architecture and write safety](docs/engineering/architecture.md)
+7. [Evaluation and acceptance cases](docs/engineering/validation.md)
+8. [Build roadmap and stop gates](docs/development/roadmap.md)
+9. [Threat model and privacy](docs/engineering/security-and-privacy.md)
+10. [Submission evidence checklist](docs/contest/submission-checklist.md)
+11. [Refinement and decision log](docs/planning/refinement-log.md)
+12. [Research sources and open questions](docs/research/sources-and-questions.md)
 
 ## Small enough to finish, sharp enough to matter
 

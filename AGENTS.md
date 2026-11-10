@@ -8,7 +8,7 @@ Do not create application code, scaffolds, executable prototypes, package manife
 
 ## First read
 
-Read README.md, docs/01-event-and-boundaries.md, docs/03-product-spec.md, docs/05-api-feasibility.md, and the latest entries in docs/11-refinement-log.md. Recheck official API documentation before implementation; do not invent mutation names, fields, OAuth capabilities, or transaction guarantees. Check repository-local skills if available.
+Read README.md, docs/contest/rules.md, docs/product/specification.md, docs/engineering/buffer-api.md, and the latest entries in docs/planning/refinement-log.md. Recheck official API documentation before implementation; do not invent mutation names, fields, OAuth capabilities, or transaction guarantees. Check repository-local skills if available.
 
 ## Product constraints
 
