@@ -21,7 +21,7 @@ export type OperationItem = {
   edits?: ReviewItem['edits'];
 };
 
-export type Operation = { id: string; items: OperationItem[] };
+export type Operation = { id: string; items: OperationItem[]; active?: boolean };
 
 export type Workspace = {
   mode: 'sample' | 'buffer';
@@ -38,4 +38,6 @@ export type Workspace = {
   bindings: Binding[];
   review?: Review;
   operation?: Operation;
+  unresolved?: OperationItem[];
+  notice?: string;
 };

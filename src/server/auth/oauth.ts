@@ -12,7 +12,7 @@ const TOKEN_URL = 'https://auth.buffer.com/token';
 const FLOW_LIFETIME_MS = 10 * 60 * 1000;
 const TOKEN_TIMEOUT_MS = 15_000;
 
-export function getOAuthConfig(env: NodeJS.ProcessEnv = process.env): OAuthConfig | null {
+export function getOAuthConfig(env: Readonly<Record<string, string | undefined>> = process.env): OAuthConfig | null {
   const clientId = env.BUFFER_CLIENT_ID?.trim();
   const clientSecret = env.BUFFER_CLIENT_SECRET?.trim();
   const redirectUri = env.BUFFER_REDIRECT_URI?.trim();
