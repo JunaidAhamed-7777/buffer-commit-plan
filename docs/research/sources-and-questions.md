@@ -1,6 +1,6 @@
 # Sources and open questions
 
-Checked 10 November 2026. Links below are primary sources except the user's existing private tracker, which supplies project status context. Web documentation can change; verify again before implementation and submission.
+Checked 10 November 2026. Links below are primary research sources. Registration status was verified separately before this repository was created. Web documentation can change; verify again before implementation and submission.
 
 ## Evidence register
 
@@ -20,7 +20,7 @@ Checked 10 November 2026. Links below are primary sources except the user's exis
 | [SocialBee bulk editor](https://help.socialbee.com/hc/en-us/articles/29979045233303-How-Do-I-Edit-Posts-in-Bulk-Several-at-Once) | Adjacent bulk content controls | Exhaustive competitor feature audit |
 | [Publer bulk workflow](https://publer.com/help/en/article/16hbbj4/) | Adjacent scheduling/customization | Lack of any competing fact-linking feature |
 
-The official event's linked developer handbook was unavailable during this check. No handbook-only claim is used. Registration status comes from the existing private tracker; no private receipt details or unrelated personal information are copied into this repository.
+The official event's linked developer handbook was unavailable during this check. No handbook-only claim is used. No registration-receipt details or unrelated personal information are needed in the project documentation.
 
 ## Questions to answer by evidence, not guesswork
 

@@ -16,13 +16,13 @@ Checked against primary sources on 10 November 2026. This page is a planning sum
 
 ## What a future entry needs
 
-A hosted working app, OAuth authentication with Buffer, successful real API use, a demo no longer than two minutes, approximately 300 words covering problem/audience/API/next steps, and an app client ID. A personal API key alone does not satisfy the OAuth requirement. Public source code was not required in the rules reviewed; keep this repo private unless the user directs otherwise.
+A hosted working app, OAuth authentication with Buffer, successful real API use, a demo no longer than two minutes, approximately 300 words covering problem/audience/API/next steps, and an app client ID. A personal API key alone does not satisfy the OAuth requirement. Public source code was not required in the rules reviewed; the owner has now authorized publishing this repository. This does not substitute for a working public app.
 
 ## Status and authorization
 
-The existing private hackathon tracker records a verified registration receipt on 10 November. Registration is separate from creating an OAuth client, granting permissions, submitting the project, or winning. No credentials, client ID, live app, or submission are established by this planning work.
+Registration was previously confirmed on 10 November. Registration is separate from creating an OAuth client, granting permissions, submitting the project, or winning. No credentials, client ID, live app, or submission are established by this planning work.
 
-This task authorizes repository creation and documentation commits/pushes. It does not authorize implementation, persistent API access, social-account connection, Buffer writes, public publication, paid hosting, external outreach, or final entry submission.
+The current task authorizes public repository publication, project structure, documentation, placeholders and commits/pushes. It does not authorize implementation, persistent API access, social-account connection, Buffer writes, app deployment, paid hosting, external outreach or final entry submission.
 
 Before an authorized implementation begins, separately resolve: account readiness; exact OAuth permissions and secure credential setup; suitable non-sensitive test drafts/channels; hosting budget; public privacy information; and a real integration test. Do not block ordinary document refinement on those future actions.
 

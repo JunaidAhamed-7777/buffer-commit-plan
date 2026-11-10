@@ -10,7 +10,7 @@ The product repository is ready to receive implementation; no application code h
 4. [Architecture and operation protocol](engineering/architecture.md)
 5. [Security and privacy](engineering/security-and-privacy.md)
 6. [Validation and failure matrix](engineering/validation.md)
-7. [Development roadmap](development/roadmap.md)
+7. [Getting started](development/getting-started.md) and [development roadmap](development/roadmap.md)
 
 ## Contest and evidence
 

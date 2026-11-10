@@ -4,7 +4,7 @@ Date: 10 November 2026. Record real changes in reasoning. These entries describe
 
 ## Pass 1 · Start from the event, not a generic AI demo
 
-Read the existing tracker before choosing work. Confirmed the Buffer contest and registration context, checked official rules, and inspected the user's repository list. No Buffer project was found in that search. Reviewed Homingo's independent planning README to avoid merging projects or importing its future kickoff restrictions.
+Checked existing contest/project context before choosing work, then verified official rules. Kept this project independent and avoided importing unrelated build-window restrictions.
 
 Decision: a new private documentation repository, no code, no registration repeat. Buffer's build window is already open; documentation-only is the user's requested phase.
 
@@ -67,8 +67,14 @@ The review also narrowed the source claim: Buffer's documented individual-edit f
 | Stale text blocks | Avoids unsafe rushed merge engine | Fresh-review anchor suggestions are correctly tested |
 | No runtime AI | The core job does not need it | A measured user need warrants cost/data/complexity |
 | No offline scope | Interactive MVP does not need background access | A necessary workflow and permission justify it |
-| Private repo | Planning stage; no public source requirement found | User explicitly requests publication |
+| Public project skeleton | Owner explicitly requested publication and repository restructuring | Owner changes visibility or begins implementation |
 
 ## Remaining highest-risk hypotheses
 
 Real OAuth draft editing across two channels; setup burden versus manual edits; supported-content classification; read-after-write behavior; residual concurrency risk. These require implementation authorization and evidence, not more confident prose.
+
+## Project transition · Plan to skeleton
+
+The owner requested public visibility and a repository structure ready for the actual project, while explicitly keeping implementation out of scope. Existing design documents moved into product, engineering, development, contest, planning and research sections. Source/server/test/data/assets directories now have README placeholders or empty markers, with no application code or framework scaffolding.
+
+The root README now describes Patchwork and its honest pre-implementation status. Future setup, contribution and security guidance were added. Planning commits remain in git history; no history rewrite or licence selection is part of this transition.

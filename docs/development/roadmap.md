@@ -1,12 +1,12 @@
 # Build roadmap and stop gates
 
-**Current phase: documentation.** This roadmap is a proposed future sequence, not permission to begin implementation or a promise that it will finish before the contest deadline.
+**Current phase: project skeleton, no implementation.** This roadmap is a proposed future sequence, not permission to begin implementation or a promise that it will finish before the contest deadline.
 
 The deadline is 14 November 2026 at 07:59 UTC / 13:29 IST. A narrow, working entry beats a broad unfinished one. Preserve a real evidence and submission buffer. If implementation authorization arrives too late, do not rush unverified claims into an entry.
 
-## Phase 0 · Planning, now
+## Phase 0 · Design and repository preparation
 
-Deliver: event/source check, alternatives, selected concept, product/UX, API map, architecture, failure matrix, privacy model, and evidence checklist. Commit completed milestones to the private remote. Resolve contradictions, then stop the pass. No app code or credentials.
+Deliver: event/source check, alternatives, selected concept, product/UX, API map, architecture, failure matrix, privacy model, and evidence checklist. Commit completed milestones to the repository remote. Resolve contradictions, then stop the pass. The repository now reserves source/test/data/assets directories with documentation and empty markers. No app code or credentials.
 
 Exit: another builder can explain the job, exclusions, safety limits, first API spike, and completion gates without this conversation.
 

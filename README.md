@@ -1,46 +1,64 @@
-# Patchwork · Buffer Commit
+# Patchwork
 
 **Change the fact. Keep the voice.**
 
-Patchwork is a campaign correction desk for people who run workshops, launches, and community events. Link the same fact across different Buffer drafts. When that fact changes, review the exact words that need changing, then apply the approved patches to Buffer.
+A campaign correction desk for Buffer drafts. Patchwork is designed to link a shared venue, date label or URL across independently written posts, show exact text changes, and apply only reviewed corrections.
 
-**Status: documentation only.** No app, OAuth client, live integration, test results, deployment, or contest submission exists in this repository. The working name is provisional, not a cleared trademark.
+**Project status: skeleton ready; implementation not started.** This repository contains the product design, engineering documents, contribution guidance and reserved application/test directories. It has no runnable app, dependencies, OAuth client, live integration or deployed demo.
 
-## The moment worth building
+## The product
 
-A workshop moves from Studio 4 to Studio 9. Its LinkedIn announcement, Bluesky reminder, and follow-up draft each say it differently. Patchwork shows the affected phrases, changes only the linked facts, and leaves the surrounding copy alone. A draft edited elsewhere is held for fresh review instead of silently overwritten.
+A workshop moves from Studio 4 to Studio 9. Three drafts describe it in different voices. The intended flow is:
 
-The proposed distinction is **fact-linked, reviewed repair**, not another caption generator or content calendar. Buffer already does drafting, templates, channel variants, and scheduling. Its help center currently says existing scheduled multi-channel posts must be edited individually. Relevance to our narrower draft-only workflow remains a hypothesis to validate. [Source](https://support.buffer.com/articles/scheduling-posts-4Qdld7giAZ).
+1. Select plain-text Buffer drafts and link the exact venue phrases.
+2. Change the venue once and inspect the proposed changes across the selected drafts.
+3. Approve the precise batch. Hold drafts that changed since review.
+4. See separate verified, failed or uncertain outcomes for each post.
 
-## Read in this order
+This is the target experience, not a list of implemented features. The first version is deliberately draft-only: no publishing, scheduling, generative rewriting, media or threads. The API does not provide a documented atomic version check, so the design discloses the remaining concurrency risk.
 
-1. [Event rules and action boundaries](docs/contest/rules.md)
-2. [Idea tournament and differentiation](docs/planning/idea-tournament.md)
-3. [Product specification and scope](docs/product/specification.md)
-4. [Experience and two-minute demo](docs/product/experience-and-demo.md)
-5. [API feasibility and unknowns](docs/engineering/buffer-api.md)
-6. [Architecture and write safety](docs/engineering/architecture.md)
-7. [Evaluation and acceptance cases](docs/engineering/validation.md)
-8. [Build roadmap and stop gates](docs/development/roadmap.md)
-9. [Threat model and privacy](docs/engineering/security-and-privacy.md)
-10. [Submission evidence checklist](docs/contest/submission-checklist.md)
-11. [Refinement and decision log](docs/planning/refinement-log.md)
-12. [Research sources and open questions](docs/research/sources-and-questions.md)
+## Start here
 
-## Small enough to finish, sharp enough to matter
+- [Getting started](docs/development/getting-started.md): current state, future setup gates and directory ownership.
+- [Product specification](docs/product/specification.md): audience, scope and behavior.
+- [Architecture](docs/engineering/architecture.md): boundaries, review manifests and operation protocol.
+- [Roadmap](docs/development/roadmap.md): implementation sequence and stop gates.
+- [All documentation](docs/README.md): API research, UX, validation, privacy, contest and planning history.
+- [Contributing](CONTRIBUTING.md) and [agent instructions](AGENTS.md): how to continue without crossing the no-code boundary.
 
-One operator, one Buffer organization, one campaign, two text-capable networks, and three to ten selected plain-text drafts. Link facts by selecting literal phrases. Preview a batch. Confirm individual changes. Verify each result. Stop on conflicts or uncertain outcomes.
+## Repository layout
 
-No automatic publishing, scheduled-post mutation, live-post correction, generative rewriting, media, threads, analytics, external scraping, background monitoring, or promises of atomic multi-post edits in the core build.
+| Path | Intended role |
+| --- | --- |
+| src/app | Application pages, routes and composition |
+| src/components | Accessible review interface |
+| src/domain | Pure fact, binding and patch rules |
+| src/server | Auth, Buffer adapter, campaigns, operations and storage |
+| tests | Unit, integration and end-to-end checks; synthetic fixtures |
+| data/migrations | Future schema migrations |
+| public | Public-safe static assets |
+| docs/product | Specification and experience |
+| docs/engineering | Architecture, API, validation and security |
+| docs/development | Onboarding and roadmap |
+| docs/contest | Rules and submission requirements |
+| docs/planning | Preserved idea decisions and refinement history |
+| docs/research | Sources and open questions |
+| docs/evidence | Future sanitized proof; currently no app evidence |
 
-## Contest clock
+The application folders contain README placeholders or empty .gitkeep markers only. They are not framework-generated code.
 
-Submission cutoff: **14 November 2026, 07:59 UTC / 13:29 IST**. The build window is already open. This task remains planning-only because that is the requested phase, not because Buffer forbids building now.
+## Setup and checks
 
-Buffer requires a public working app with OAuth and successful real API use, a demo of at most two minutes, an approximately 300-word explanation, and the app client ID. Private planning documentation alone is not a qualifying submission. [Official event](https://buffer.com/api/commit) · [terms](https://buffer.com/api/commit/terms).
+There is nothing to install or run yet. Runtime versions, dependency manifests, local commands, environment configuration and test runners will be added when implementation begins. Do not treat documentation/link checks as application tests.
 
-## Honest promises
+Proposed direction: one TypeScript web application, a server-side Buffer adapter, pure deterministic patch logic and a small durable relational store. Final tooling and hosting remain open. No runtime AI is required for the core workflow.
 
-This is a product hypothesis with a documented workflow gap, not validated demand or a claim of originality across the whole market. API documentation supports the broad approach; authenticated behavior is untested. OAuth setup, app hosting, model costs if later added, and contest submission need their own authorization. No guaranteed win, time saving, conflict prevention, or API success is claimed.
+## Buffer Commit
 
-See [AGENTS.md](AGENTS.md) before continuing. Keep commits small and meaningful; publish each completed documentation milestone to the private remote. Preserve user edits and keep evidence separate from plans.
+This project is being prepared for [Buffer Commit](https://buffer.com/api/commit). The verified submission cutoff is **14 November 2026, 07:59 UTC / 13:29 IST**. A qualifying entry still needs a public working app, Buffer OAuth, successful real API use and the required submission artifacts. A public repository alone is not an entry. See [rules](docs/contest/rules.md) and [submission checklist](docs/contest/submission-checklist.md).
+
+## Evidence and limits
+
+The concept has been refined against the official API and adjacent native workflows. Buffer documents individual-edit friction for scheduled multi-channel posts; usefulness for this narrower draft-only product remains a hypothesis. Setup cost, real OAuth behavior and cross-channel editing still need testing. No customers, time savings, passing application tests or awards are claimed.
+
+The working name is provisional. No software licence has been selected; public visibility alone does not grant an open-source licence. AI-assisted planning is disclosed in the [submission notes](docs/contest/submission-checklist.md).

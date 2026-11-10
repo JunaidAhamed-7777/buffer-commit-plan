@@ -1,6 +1,6 @@
 # Submission evidence checklist
 
-**Current status: not built, not submitted.** Registration was already recorded in the private tracker. This repository does not establish a contest entry or any award.
+**Current status: not built, not submitted.** Registration was previously confirmed. This repository does not establish a contest entry or any award.
 
 ## Before a future final-submit decision
 

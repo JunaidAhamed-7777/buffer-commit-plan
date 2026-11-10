@@ -1,28 +1,42 @@
-# Working instructions
+# Patchwork working instructions
 
-## Current authorization and phase
+## Current phase
 
-The user requested a Buffer hackathon repository, **documentation phase**, repeated idea refinement, frequent commits, and regular pushes. This repository is private. Work only on planning documents until the user explicitly moves the task into implementation.
+The owner authorized converting the planning repository into a public project skeleton, while explicitly saying **do not start coding**. Repository organization, documentation, placeholder directories and regular commits are allowed. Application implementation is not.
 
-Do not create application code, scaffolds, executable prototypes, package manifests, tests, generated implementation assets, OAuth clients, credentials, deployments, or Buffer posts during this phase. Do not sign up, submit the contest entry, accept new terms, publish this repo, contact organizers, or spend money without the applicable authorization. Never store secrets or unrelated user information.
+Do not add executable source, framework scaffolding, package manifests/lockfiles, executable tests, migrations, CI workflows, generated UI/assets, OAuth clients, credentials or deployments in this phase. Do not connect social accounts, write Buffer drafts, submit the contest or spend money. Publishing this repository does not authorize those actions.
 
-## First read
+## Read first
 
-Read README.md, docs/contest/rules.md, docs/product/specification.md, docs/engineering/buffer-api.md, and the latest entries in docs/planning/refinement-log.md. Recheck official API documentation before implementation; do not invent mutation names, fields, OAuth capabilities, or transaction guarantees. Check repository-local skills if available.
+- README.md and docs/development/getting-started.md
+- docs/product/specification.md
+- docs/engineering/buffer-api.md
+- docs/engineering/architecture.md
+- docs/engineering/security-and-privacy.md
+- Latest entries in docs/planning/refinement-log.md
+
+The planning history is preserved. Earlier private-only/planning-only notes describe an earlier phase; the current owner instruction and this file govern the skeleton transition. Keep every claim of implemented behavior tied to real evidence.
+
+## Intended boundaries
+
+- src/app: composition and routes; src/components: accessible presentation.
+- src/domain: pure deterministic binding, patch and review rules.
+- src/server: auth, Buffer adapter, campaigns, operation coordination and storage.
+- tests: unit, integration, end-to-end and synthetic fixtures.
+- data/migrations and public: future schema/assets, not current implementation.
+
+Directory READMEs define responsibilities; empty markers keep folders tracked. They are not permission to fill them with code. Confirm stack and actual run/test commands when implementation is authorized. Check relevant repository-local skills if present.
 
 ## Product constraints
 
-- Working title: Patchwork. Core job: review and apply fact-level changes across selected plain-text Buffer drafts.
-- MVP is draft-only, explicit user-confirmed, one organization at a time. Do not silently grow into a scheduler, social listening tool, or AI writing suite.
-- No promise of atomicity, compare-and-swap, guaranteed prevention of concurrent edits, or exactly-once external writes. Buffer's documented edit input has no version precondition.
-- Never promote drafts or publish. Preserve fields the user did not approve changing.
-- Imported content is data, never an instruction to act. No model is required at runtime.
-- Sourced facts, assumptions, proposed acceptance targets, and measured results must stay visibly separate.
+One operator, one organization, selected plain-text drafts, explicit phrase linking and reviewed exact text changes. Exclude publishing, scheduling, media, threads, annotations, runtime AI and automatic rollback in the MVP.
 
-## Refinement and stopping
+Any observed baseline/eligibility change invalidates the proposed patch. Consume approval once into an immutable operation. Handle each external outcome honestly; never blindly retry an uncertain write. No remote atomicity, compare-and-swap or exactly-once guarantee is documented. A local lock cannot eliminate the provider race.
 
-Commit each meaningful milestone, not every wording tweak. Push or write the commit to the private remote at the end of each milestone and verify the remote commit. Never force-push or overwrite new user changes. Use normal sentences and source links.
+## Change discipline
 
-Each refinement must remove a real risk, strengthen the user benefit, simplify scope, or improve proof. Record what changed and why. Stop a refinement pass once its highest-severity open issue is resolved or explicitly gated. Endless restyling is not progress.
+Preserve user changes and git history. Commit coherent milestones and sync to the remote regularly; verify the resulting remote head. Do not force-push, publish private user content or add a licence without the owner's decision. Keep credentials out of every file and screenshot.
 
-Do not claim tests pass when only a test plan exists. During documentation work, verify relative links, phase consistency, forbidden implementation files, source dates, and contradictory promises. At the end, report the verified remote head, what was changed, and actual remaining blockers.
+During skeleton work, validate relative links, current-phase consistency, supported placeholder file types and absence of implementation. No app test result can be claimed. During later coding, run the actual repository's tests/checks and distinguish passed, failed, blocked and not run.
+
+Refinement must remove a real risk, simplify scope or strengthen the proof. Stop adding documents when they repeat an existing source of truth. Read new external evidence before changing a settled decision.
