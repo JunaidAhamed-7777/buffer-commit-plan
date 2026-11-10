@@ -49,6 +49,10 @@ A planning-time alternative is one honest self-test on seeded fixtures, explicit
 | Browser closes while applying | Durable operation resumes by read/reconcile |
 | OAuth denial/state mismatch | No connected state or actions; useful recovery |
 | Token expiry/revocation | Prompt reconnect; no credential leakage |
+| HTTP 200 with a confirmed no-write typed rejection | Failed, no success receipt or automatic replay; remaining items stop |
+| Mutation success plus warnings | Inspect warnings and read back; warning handling never resends the edit |
+| Generic server error, unknown error type or malformed response after dispatch | Outcome unknown unless definite rejection/completion evidence exists; no automatic retry |
+| Confirmed provider HTTP 429 rejection | Failed and batch stopped; honor Retry-After before fresh preflight/review, without replaying the operation |
 | Provider errors/limits | Preserve review state, show useful failure, no tight retry loop |
 
 ## Integration proof required

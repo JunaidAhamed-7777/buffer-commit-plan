@@ -1,6 +1,6 @@
 # API feasibility
 
-Research checked 10 November 2026. **Documented is not tested.** No authenticated Buffer request has been made for this project. These are requirements for a later authorized spike, not executable examples or implementation.
+Core post schema and error/limit guidance rechecked 11 November 2026; OAuth guidance last checked 10 November. **Documented is not tested.** No authenticated Buffer request has been made for this project. These are requirements for a later authorized spike, not executable examples or implementation.
 
 ## Stable core to validate first
 
@@ -15,6 +15,22 @@ Research checked 10 November 2026. **Documented is not tested.** No authenticate
 [API reference](https://developers.buffer.com/reference) · [EditPostInput](https://developers.buffer.com/types/EditPostInput.html) · [Posts guide](https://developers.buffer.com/guides/posts-and-scheduling.html)
 
 Important confirmed semantics: `editPost` is the mutation name. Omitting text preserves it, while null/empty can clear it; omit unrelated input fields. Omitting assets preserves them. Omitting scheduling fields preserves scheduling. Threaded text has additional constraints, so exclude threads. No expected-version input or atomic batch-edit guarantee was found. Do not invent either.
+
+## Evidence needed to admit a draft
+
+At import and each final preflight, verify the post's channel/organization membership, literal `status: draft`, and `allowedActions` containing `updatePost`. The permission is named `updatePost`; the mutation remains `editPost`. Other statuses, including `needs_approval`, are outside scope. These fields narrow the classifier; they do not replace ownership or supported-content checks. [Reference](https://developers.buffer.com/reference) · [PostStatus](https://developers.buffer.com/types/PostStatus.html).
+
+An empty assets list is insufficient. Inspect the concrete metadata type: [Bluesky metadata](https://developers.buffer.com/types/BlueskyPostMetadata.html) exposes annotations, link attachments and thread fields; [LinkedIn metadata](https://developers.buffer.com/types/LinkedInPostMetadata.html) also exposes a first comment. Prove how each chosen service represents ordinary text and excluded structures in actual OAuth responses. An omitted field, unknown metadata type or incomplete response is not evidence that unsupported content is absent. Keep uncertain cases excluded, including any automatically generated URL annotations or previews until their behavior is understood.
+
+## Classifying an edit response
+
+Request `__typename`, the `PostActionSuccess` result and a `MutationError` catch-all. Inspect both `data` and top-level `errors`; HTTP 200 alone proves neither success nor rejection. A success result can carry warnings, so check them and read back without resending the edit. [Error handling](https://developers.buffer.com/guides/error-handling.html) · [PostActionPayload](https://developers.buffer.com/types/PostActionPayload.html).
+
+Patchwork's policy is to mark Failed only with evidence of a definite no-write rejection. A generic `UnexpectedError`, unclassified error member, malformed/missing response or transport failure after dispatch stays Outcome unknown unless stronger evidence resolves it. An error message alone is insufficient. Follow the [reconciliation protocol](architecture.md#reconciliation-after-uncertainty), including its block on further writes.
+
+The [rate-limit guide](https://developers.buffer.com/guides/api-limits.html) documents rejected HTTP 429 responses with `Retry-After`, despite the error guide's broad statement that GraphQL returns 200. Handle both. A confirmed provider rate-limit rejection stops the batch as Failed; honor the wait before a fresh preflight/review, without automatically replaying the consumed operation. App clients have separate quotas from personal keys/MCP; capture actual rate headers instead of hard-coding example limits.
+
+Keep diagnostic types/codes and timing, with provider messages sanitized. Do not copy full-query/variable/response logging examples: those can expose draft text or credentials. Generic retry examples do not override the stricter uncertain-write policy.
 
 ## OAuth plan
 
@@ -33,16 +49,16 @@ A short interactive session can reconnect when its access token expires. If offl
 7. Repeat across a second text-capable network and check permissions/unsupported states.
 8. Demonstrate a controlled stale-read case and a simulated unknown-response case without unsafe retries.
 
-Record exact schema version/date, operation names and redacted responses only after execution. Test drafts must be specifically authorized. A successful account read alone demonstrates connectivity but not Patchwork's product function.
+Record exact schema version/date, operation names and redacted responses only after execution. Test drafts must be specifically authorized. A successful account read alone demonstrates connectivity but not Patchwork's product function. Before batch writes, establish which response types prove rejection/completion and whether any supported evidence can resolve a lost response; do not assume a later text match settles that question.
 
 ## Unknowns that can change the plan
 
 - The authenticated account's real channels, plan restrictions and client-registration availability.
-- Exact query fields needed to reject annotations, threads, approvals and media without ambiguity.
+- Which documented metadata fields and actual OAuth responses suffice to reject annotations, threads, approvals and media without ambiguity on each chosen channel.
 - Error behavior and consistency delay for read-after-write in actual OAuth use.
-- Limits/rate policies for this client. Read official error/limit docs before implementing; do not guess numbers.
+- Actual rate headers and quotas for the authorized app client; the documented policy is not a measurement of this project's access.
 - Whether default link previews or provider normalization alter nominally plain text. Read back; never normalize away a meaningful difference to claim success.
-- Whether a reliable edit action/status check is available for every supported service.
+- Whether documented `draft`/`updatePost` checks and service metadata behave as required on both chosen channels.
 - No documented remote lock or conditional edit. The residual race is an accepted limitation to disclose, not a missing feature we can magic away locally.
 
 ## Explicit non-dependencies

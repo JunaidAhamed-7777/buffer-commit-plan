@@ -90,3 +90,9 @@ Decision: all observed text states leave an unresolved request write-blocked unt
 11 November 2026. Cancellation was checked before the provider read, leaving a gap while that read was in progress. A cancel or logout could arrive before dispatch without another stated check.
 
 Decision: recheck session and cancellation when durably claiming the item for dispatch, and acquire its post guard in the same step. A stop that wins first prevents the send; an already claimed item keeps its own outcome. Added acceptance cases for both orderings, concurrent claims and a crash after the claim. No code or executable tests were added.
+
+## Pass 12 · Replace generic API errors with explicit evidence rules
+
+11 November 2026. Re-read Buffer's post schema, error and rate-limit documentation. Edit eligibility uses `updatePost`, while the mutation is `editPost`. Service metadata carries exclusion signals beyond assets. The error guide describes HTTP 200 errors and warnings; the rate-limit guide separately documents rejected HTTP 429 responses.
+
+Decision: record the exact field checks, classify the full response, and preserve uncertainty when an error does not establish a no-write rejection. Keep private copy out of diagnostic examples and automatic replay out of the apply path. Added sources and acceptance cases; actual OAuth behavior and lost-response completion evidence remain unverified.

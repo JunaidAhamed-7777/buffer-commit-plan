@@ -1,6 +1,6 @@
 # Patchwork documentation
 
-The product repository is ready to receive implementation; no application code has been written. Design documents describe intended behavior, not completed features.
+Patchwork is in the documentation and project-skeleton phase. Coding still needs explicit authorization. Design documents describe intended behavior; no application code has been written.
 
 ## Build from these
 

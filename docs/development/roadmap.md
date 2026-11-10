@@ -47,7 +47,7 @@ Suggested internal evidence freeze: 13 November, 18:00 IST. This is a proposed p
 
 ## Cut ladder
 
-Cut in this order: alternate literal renderings → decorative polish → extra fact types → campaigns beyond one → more than three drafts. Keep OAuth, real API edits/read-back, precise diffs, stale-edit refusal, uncertainty handling, owner isolation and honest disclosure.
+Cut in this order: alternate literal renderings → decorative polish → extra fact types → more than three drafts. Keep OAuth, real API edits/read-back, precise diffs, stale-edit refusal, uncertainty handling, owner isolation and honest disclosure.
 
 Never cut security or replace live integration with fictional receipts to meet the clock. If two-channel support is not verified, accurately label the reduced single-channel product and reconsider the submission story.
 
