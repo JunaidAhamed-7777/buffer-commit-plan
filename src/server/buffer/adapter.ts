@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readBoundedJson } from './read-json.ts';
 
 export type EligibleDraft = { id: string; channel: string; text: string; eligibility: string };
 
@@ -14,6 +15,7 @@ type Eligibility = { kind: 'eligible'; draft: EligibleDraft } | { kind: 'unsuppo
 
 const API_URL = 'https://api.buffer.com';
 const REQUEST_TIMEOUT_MS = 15_000;
+const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const PAGE_SIZE = 20;
 
 const ACCOUNT_QUERY = `query PatchworkAccount {
@@ -257,7 +259,7 @@ export class BufferAdapter {
         redirect: 'error',
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-      const body = object(await response.json());
+      const body = object(await readBoundedJson(response, MAX_RESPONSE_BYTES));
       if (body) return { status: response.status, retryAfter: response.headers.get('Retry-After'), body };
     } catch {
       // Provider bodies and transport errors can contain private inputs.

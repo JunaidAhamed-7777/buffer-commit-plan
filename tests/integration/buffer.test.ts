@@ -123,6 +123,39 @@ test('a confirmed rate limit rejection carries a wait for a fresh review', async
   assert.ok(result.retryAt && result.retryAt >= startedAt + 60_000);
 });
 
+test('an oversized streamed edit response stays unknown and is never replayed', async () => {
+  const success = { data: { editPost: { __typename: 'PostActionSuccess', post: { id: bluesky.id } } } };
+  const bytes = new TextEncoder().encode(JSON.stringify({ ...success, ignored: 'x'.repeat(2304 * 1024) }));
+  let calls = 0;
+  let cancelled = false;
+  const adapter = new BufferAdapter('synthetic-token', async () => {
+    calls++;
+    let offset = 0;
+    return new Response(new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (offset >= bytes.length) controller.close();
+        else {
+          controller.enqueue(bytes.subarray(offset, offset + 64 * 1024));
+          offset += 64 * 1024;
+        }
+      },
+      cancel() { cancelled = true; },
+    }), { headers: { 'Content-Type': 'application/json' } });
+  });
+
+  assert.equal((await adapter.edit(bluesky.id, 'Meet at Maple Hall.')).kind, 'unknown');
+  assert.equal(calls, 1);
+  assert.equal(cancelled, true);
+});
+
+test('a malformed UTF-8 draft response cannot become the approved baseline', async () => {
+  const body = JSON.stringify({ data: { post: { ...bluesky, text: 'room-marker' } } });
+  const [before, after] = body.split('room-marker');
+  const malformed = Buffer.concat([Buffer.from(before), Buffer.from([0xc3, 0x28]), Buffer.from(after)]);
+  const adapter = new BufferAdapter('synthetic-token', async () => new Response(malformed));
+  await assert.rejects(adapter.draft('org-1', bluesky.id), /could not confirm/);
+});
+
 const oauthEnv = {
   BUFFER_CLIENT_ID: 'test-client', BUFFER_CLIENT_SECRET: 'synthetic-secret',
   BUFFER_REDIRECT_URI: 'https://localhost:3000/api/buffer/callback',
@@ -167,4 +200,17 @@ test('code exchange stays server-side and checks the granted permissions', async
   for (const scope of ['account:read posts:read', token.scope + ' offline_access']) {
     await assert.rejects(exchangeOAuthCode(config, 'synthetic-code', verifier, async () => Response.json({ ...token, scope })), /different permissions/);
   }
+});
+
+test('an OAuth response over the token byte budget is rejected without exposing its contents', async () => {
+  const config = getOAuthConfig(oauthEnv)!;
+  const { verifier } = beginOAuth(config);
+  const oversized = Response.json({
+    access_token: 'private-token-' + 'x'.repeat(32 * 1024), token_type: 'Bearer', expires_in: 3600,
+    scope: 'account:read posts:read posts:write',
+  });
+  await assert.rejects(
+    exchangeOAuthCode(config, 'synthetic-code', verifier, async () => oversized),
+    { message: 'Buffer could not complete the connection. Start the connection again.' },
+  );
 });

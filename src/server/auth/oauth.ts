@@ -1,4 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { readBoundedJson } from '../buffer/read-json.ts';
 
 export type OAuthConfig = {
   clientId: string;
@@ -11,6 +12,7 @@ const AUTHORIZATION_URL = 'https://auth.buffer.com/auth';
 const TOKEN_URL = 'https://auth.buffer.com/token';
 const FLOW_LIFETIME_MS = 10 * 60 * 1000;
 const TOKEN_TIMEOUT_MS = 15_000;
+const MAX_TOKEN_RESPONSE_BYTES = 32 * 1024;
 
 export function getOAuthConfig(env: Readonly<Record<string, string | undefined>> = process.env): OAuthConfig | null {
   const clientId = env.BUFFER_CLIENT_ID?.trim();
@@ -64,13 +66,7 @@ export async function exchangeOAuthCode(
   }
 
   const startedAt = Date.now();
-  let token: {
-    access_token?: unknown;
-    expires_in?: unknown;
-    scope?: unknown;
-    token_type?: unknown;
-    error?: unknown;
-  } | null;
+  let token: Record<string, unknown> | null = null;
 
   try {
     const response = await request(TOKEN_URL, {
@@ -88,7 +84,12 @@ export async function exchangeOAuthCode(
       redirect: 'error',
       signal: AbortSignal.timeout(TOKEN_TIMEOUT_MS),
     });
-    token = response.ok ? await response.json() : null;
+    if (response.ok) {
+      const body = await readBoundedJson(response, MAX_TOKEN_RESPONSE_BYTES);
+      if (body && typeof body === 'object' && !Array.isArray(body)) token = body as Record<string, unknown>;
+    } else {
+      void response.body?.cancel().catch(() => {});
+    }
   } catch {
     token = null;
   }
