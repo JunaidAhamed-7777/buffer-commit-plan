@@ -1,6 +1,7 @@
 import type { Binding, Draft, ReviewItem } from './patch.ts';
 
 export type Fact = { id: string; label: string; value: string };
+export type WorkspaceDraft = Draft & { version: string };
 
 export type Review = {
   id: string;
@@ -33,7 +34,7 @@ export type Workspace = {
   available?: Draft[];
   availableFetchedAt?: string;
   nextCursor?: string;
-  drafts: Draft[];
+  drafts: WorkspaceDraft[];
   facts: Fact[];
   bindings: Binding[];
   review?: Review;

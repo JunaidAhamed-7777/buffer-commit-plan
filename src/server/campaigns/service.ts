@@ -6,7 +6,7 @@ import type { BufferAdapter } from '../buffer/adapter.ts';
 import { expireBatch, runBatch, reconcileWrite, stopBatch } from '../operations/apply.ts';
 import type { Session, WorkspaceStore } from '../storage/store.ts';
 import { digest, newWorkspace, observeListedDrafts, SAMPLE_LIFETIME, save } from './model.ts';
-import type { WorkspaceData } from './model.ts';
+import type { DraftSnapshot, WorkspaceData } from './model.ts';
 
 export type DraftProvider = Pick<BufferAdapter, 'drafts' | 'draft' | 'edit'>;
 
@@ -25,6 +25,10 @@ const REVIEW_LIFETIME = 10 * 60 * 1000;
 
 function publicDraft({ id, channel, text }: Draft): Draft {
   return { id, channel, text };
+}
+
+function draftVersion(draft: DraftSnapshot) {
+  return digest(JSON.stringify([draft.eligibility, draft.text]));
 }
 
 function textField(input: Record<string, unknown>, key: string, limit = 256) {
@@ -130,7 +134,7 @@ export class WorkspaceService {
       available: data.available?.map(publicDraft),
       availableFetchedAt: data.availableFetchedAt,
       nextCursor: data.nextCursor,
-      drafts: data.drafts.map(publicDraft),
+      drafts: data.drafts.map(draft => ({ ...publicDraft(draft), version: draftVersion(draft) })),
       facts: data.facts,
       bindings: data.bindings,
       review: savedReview ? { id: savedReview.id, factId: savedReview.factId, replacement: savedReview.replacement, items: savedReview.items } : undefined,
@@ -213,10 +217,13 @@ export class WorkspaceService {
       case 'unbind': {
         const draft = data.drafts.find(item => item.id === input.draftId);
         if (!draft) throw new WorkspaceError('Choose a draft from this campaign.');
+        if (input.version !== draftVersion(draft)) throw new WorkspaceError('The draft changed. Reload it before linking phrases.', 409);
         const { start, end } = range(input);
         if (action === 'unbind') {
+          const selected = data.bindings.find(link => link.draftId === draft.id && link.factId === input.factId && link.start === start && link.end === end);
+          if (!selected) throw new WorkspaceError('This link changed. Reload the draft and try again.', 409);
           mutate(fresh => {
-            fresh.bindings = fresh.bindings.filter(link => link.draftId !== draft.id || link.start !== start || link.end !== end);
+            fresh.bindings = fresh.bindings.filter(link => link.draftId !== draft.id || link.start !== start || link.end !== end || link.factId !== input.factId);
             delete fresh.review;
           });
           break;

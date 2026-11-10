@@ -49,7 +49,7 @@ async function link(service: WorkspaceService, session: string, draftId: string,
   assert.ok(draft);
   const start = draft.text.indexOf(phrase);
   assert.ok(start >= 0);
-  await service.act(session, { action: 'bind', draftId, factId, start, end: start + phrase.length });
+  await service.act(session, { action: 'bind', draftId, factId, start, end: start + phrase.length, version: draft.version });
 }
 
 async function connectDrafts(
@@ -234,4 +234,36 @@ test('a confirmed edit can be verified later if its first read-back fails', asyn
   assert.equal(reconciled.drafts[0].text, review.items[0].after);
   assert.equal(store.getGuard(organization.id, firstId), undefined);
   assert.deepEqual(edits, [{ id: firstId, text: review.items[0].after }]);
+});
+
+test('a changed listing invalidates both the review and stale phrase selections', async context => {
+  const { service, drafts, edits } = workspace(context);
+  const session = await connectDrafts(service, [firstId]);
+  const before = service.view(session).drafts[0];
+  const review = await preview(service, session);
+  const draft = drafts.get(firstId)!;
+  drafts.set(firstId, { ...draft, text: draft.text.replace('Studio 4', 'Studio 8') });
+
+  const refreshed = await service.act(session, { action: 'organization', id: organization.id });
+  assert.equal(refreshed.review, undefined);
+  assert.equal(refreshed.bindings.length, 0);
+  const start = before.text.indexOf(venue);
+  await assert.rejects(service.act(session, { action: 'bind', draftId: firstId, factId: 'venue', version: before.version,
+    start, end: start + venue.length }), /draft changed/i);
+  await assert.rejects(service.act(session, { action: 'apply', reviewId: review.id, ids: [firstId] }), /review changed or expired/i);
+  assert.deepEqual(edits, []);
+});
+
+test('an expired review cannot be consumed', async context => {
+  const { store, service, edits } = workspace(context);
+  const session = await connectDrafts(service, [firstId]);
+  const review = await preview(service, session);
+  const { workspaceKey } = store.getSession(session, Date.now())!;
+  const data = store.getWorkspace(workspaceKey)!;
+  data.review!.expiresAt = Date.now() - 1;
+  store.putWorkspace(workspaceKey, data, Date.now() + 60_000);
+
+  assert.equal(service.view(session).review, undefined);
+  await assert.rejects(service.act(session, { action: 'apply', reviewId: review.id, ids: [firstId] }), /review changed or expired/i);
+  assert.deepEqual(edits, []);
 });
