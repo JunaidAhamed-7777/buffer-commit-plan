@@ -1,0 +1,20 @@
+.page {
+  max-width: 43rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem 4rem;
+}
+
+.page h1 {
+  margin: 1.5rem 0 0.65rem;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.1;
+}
+
+.page h2 {
+  margin: 2rem 0 0.4rem;
+  font-size: 1.125rem;
+}
+
+.page p {
+  line-height: 1.65;
+}

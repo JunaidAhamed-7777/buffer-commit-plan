@@ -1,0 +1,10 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["src"],
+  "locale": "en",
+  "canonicalMap": "docs/product/experience-and-demo.md",
+  "requiredCapabilities": ["Select/Listbox", "Form", "Scrollbar", "CRUD"],
+  "ownership": {
+    "Select/Listbox": "native"
+  }
+}

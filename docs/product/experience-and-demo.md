@@ -53,3 +53,12 @@ These examples are planning content only. They are not authorized to be posted o
 ## Accessibility and responsive behavior
 
 Keyboard-operable linking, facts, diff review, selection, and confirmation. Visible focus, labeled errors, no color-only distinction, minimum comfortable target sizes, and screen-reader announcements for per-post outcomes. Support narrow screens with stacked cards; do not impose desktop-only behavior based on unrelated projects. Reduced motion should be respected. Test 200% zoom and a small phone viewport before claiming accessibility.
+
+## Canonical UI map
+
+| Capability | Canonical owner | Source of truth | Allowed variants | Verification |
+| --- | --- | --- | --- | --- |
+| Select/Listbox | Organization field in the workbench | Campaign selection in the [product specification](specification.md) | Native organization select | Keyboard selection and native popup inspection |
+| Form | Labeled native fields and inline errors in campaign and workbench | Linking semantics in the [product specification](specification.md) | Literal replacement, exact phrase search, organization selection | Keyboard linking and preview in [browser checks](../../tests/e2e/workbench.pw.ts) |
+| Scrollbar | Global application stylesheet | [Design system](../../DESIGN.md) | Bounded pickers and dialogs | Computed scrollbar style and narrow-screen reflow |
+| CRUD | Workspace route and campaign service | [Write protocol](../engineering/architecture.md) | Sample edits and approved Buffer draft edits | Exact subset apply in [browser checks](../../tests/e2e/workbench.pw.ts) and [operation tests](../../tests/integration/apply.test.ts) |
