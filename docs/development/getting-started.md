@@ -14,11 +14,13 @@ Open [localhost:3000](http://localhost:3000). The sample works without Buffer se
 ## Configure an approved Buffer client
 
 1. Confirm the account, requested scopes and authorized test drafts. [API feasibility and capability gates](../engineering/buffer-api.md)
-2. Register `https://localhost:3000/api/buffer/callback` on the Buffer client. Buffer requires HTTPS for localhost too. Open the HTTPS workspace at that same origin. [Buffer registration guide](https://developers.buffer.com/guides/building-apps.html#registering-an-app-client)
-3. Supply `BUFFER_CLIENT_ID`, `BUFFER_CLIENT_SECRET`, `BUFFER_REDIRECT_URI` and a 32-byte `PATCHWORK_TOKEN_KEY` in the server process environment. See [`.env.example`](../../.env.example) for the variable names and key generation command.
+2. Register a confidential client named Patchwork. Allow `account:read`, `posts:read`, and `posts:write`, and add `https://localhost:3000/api/buffer/callback` as its redirect. Buffer requires HTTPS for localhost too. [Buffer registration guide](https://developers.buffer.com/guides/building-apps.html#registering-an-app-client)
+3. From the project directory, run `./scripts/start-buffer-live.ps1` in your own PowerShell. It uses OpenSSL from Git for Windows or PATH. Enter the client ID and paste the secret into the masked prompt. The launcher supplies the credentials and a fresh token encryption key to the server process.
 4. For a hosted live connection, register the HTTPS callback and set `PATCHWORK_DB_PATH` to an absolute path on a persistent volume. A reverse proxy should preserve the public `Host`, set the trusted `X-Forwarded-Proto` and omit callback query strings from access logs.
 
-The first live check needs an approved read, one exact edit and a read-back using a low-stakes draft. Live OAuth, channel support and hosted operation are pending verification.
+Open [the HTTPS workspace](https://localhost:3000). The launcher prints the fingerprint of its temporary certificate and leaves system trust settings unchanged. If the browser shows a certificate screen, verify the localhost address and fingerprint before deciding whether to proceed. Choose **Connect Buffer** and review the permissions on Buffer’s consent screen. After restarting the launcher, disconnect and reconnect if the previous session is still open.
+
+Use a dedicated, unscheduled plain-text draft on an already connected Bluesky or LinkedIn channel. The first live check needs an approved read, one exact edit and a read-back. Live OAuth and channel support are pending verification.
 
 ## Checks
 
