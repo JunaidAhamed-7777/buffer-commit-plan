@@ -1,10 +1,10 @@
 # Architecture and write safety
 
-Proposed design only. No modules, database, requests, or tests exist yet.
+The local implementation follows this design. Real OAuth and edit behavior still need an authorized Buffer check.
 
 ## Bounded implementation shape
 
-A single TypeScript web application with a server-side Buffer adapter and a small durable relational store. React/Next.js is a reasonable provisional stack, not a commitment to a paid host. PostgreSQL is a practical production option; choose the host and database together after approval. Do not deploy SQLite on an ephemeral serverless filesystem or add Redis, queues, microservices, vector search, or an LLM by default.
+One Next.js application serves the React interface and the TypeScript Buffer adapter. SQLite stores workspaces, sessions and write guards. A hosted live connection requires a persistent volume shared by the app processes using the database. [Setup](../development/getting-started.md)
 
 The browser handles phrase selection and diff rendering. The server owns identity, authorization, fresh reads, patch validation, mutation execution, and receipts. The browser must not hold provider tokens or choose an arbitrary organization/post outside the authenticated membership boundary.
 
@@ -22,14 +22,14 @@ The browser handles phrase selection and diff rendering. The server owns identit
 
 | Entity | Minimum information | Important constraint |
 | --- | --- | --- |
-| Connection | Internal owner, provider account, granted scopes, token expiry | Token encrypted separately; no secret in receipts |
+| Connection | Server session, Buffer account, authorized organizations, encrypted token and expiry | The browser receives only a session cookie |
 | Campaign | Owner, organization, title, local revision | One organization, authorization checked server-side |
-| Draft snapshot | Post/channel IDs, full supported text, status, observed time, fingerprint, exclusion signals | Minimal needed fields; not an archive of the full account |
-| Fact/rendering | Label, literal current value, revision | No implied semantic truth or automatic date interpretation |
-| Binding | Post, baseline fingerprint, exact range/text/context, rendering | Non-overlapping and explicit |
+| Draft snapshot | Post ID, channel label, exact text and eligibility fingerprint | Only eligible drafts enter a campaign |
+| Fact | Label and literal current value | Date labels are plain text |
+| Binding | Post, fact, exact text range and baseline | Non-overlapping and explicit |
 | Review | Campaign revision, selected posts, before/after text fingerprints, exact proposed text, expiry, approval | Bound to owner and current local revision |
 | Operation | Review reference, local operation key, per-post state, attempt time, request outcome | Duplicate clicks reuse same local record |
-| Unresolved write guard | Provider, organization, post ID, originating account and unresolved operation reference | Block follows the post across accounts, sessions and campaigns |
+| Unresolved write guard | Buffer organization, post ID and unresolved operation reference | Block follows the post across accounts, sessions and campaigns |
 | Receipt | Intended/observed fingerprints, verification time, status, redacted failure | Does not claim remote idempotency or permanent state |
 
 Full baseline text is needed to generate precise replacements. A hash is a change detector, not confidentiality or proof of truth. Treat campaign copy as private user content. Keep retention short and explicit.
@@ -66,7 +66,7 @@ Record current text separately from request completion. An intended-text match c
 
 Keep the item in Outcome unknown and block further writes to that post until sufficient provider evidence establishes that the earlier request is no longer in flight. A fresh approval, elapsed time or another matching read is not completion evidence. If no supported way to obtain that evidence is available, offer read-only reconciliation and manual inspection; do not invent a safe retry interval. After completion is established, compare current text and eligibility again before assigning a final outcome or preparing a fresh review.
 
-Key the unresolved-write guard by provider, organization and post within the app's ownership boundary, independently of campaign or session. Keep the originating provider account as provenance; switching to another authorized account for the same post must not bypass the guard. Check current authorization separately and check the guard before every dispatch. Cancellation, logout, reconnect and campaign deletion/recreation must not clear it. Retain only the identifiers and operation state needed for that guard, without tokens or draft copy; define and disclose its retention before release.
+The guard follows the Buffer organization and post across accounts, campaigns and sessions. Check current authorization separately and check the guard before every dispatch. Cancellation, logout, reconnect and campaign deletion leave the guard in place. [Retention](security-and-privacy.md#retention)
 
 App-local operation keys prevent repeated local submission. They are not provider-supported idempotency keys. A crashed process resumes at reconciliation, not at “send again.” This includes a crash after the durable dispatch claim when the app cannot establish whether the request was sent.
 

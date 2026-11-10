@@ -1,35 +1,35 @@
 # Build roadmap and stop gates
 
-**Current phase: project skeleton, no implementation.** This roadmap is a proposed future sequence, not permission to begin implementation or a promise that it will finish before the contest deadline.
+The sample and live adapter are implemented locally. The next release gate is a real, authorized OAuth connection and edit with read-back. The phases below record the original plan and its remaining proof.
 
-The deadline is 14 November 2026 at 07:59 UTC / 13:29 IST. A narrow, working entry beats a broad unfinished one. Preserve a real evidence and submission buffer. If implementation authorization arrives too late, do not rush unverified claims into an entry.
+The deadline is 14 November 2026 at 07:59 UTC / 13:29 IST. Leave time for verification and review of the submission artifacts.
 
 ## Phase 0 · Design and repository preparation
 
-Deliver: event/source check, alternatives, selected concept, product/UX, API map, architecture, failure matrix, privacy model, and evidence checklist. Commit completed milestones to the repository remote. Resolve contradictions, then stop the pass. The repository now reserves source/test/data/assets directories with documentation and empty markers. No app code or credentials.
+The design pass produced the product scope, API map, architecture, failure matrix, privacy model and evidence checklist. The skeleton phase reserved the source, test, data and asset directories for the app now in the repository.
 
 Exit: another builder can explain the job, exclusions, safety limits, first API spike, and completion gates without this conversation.
 
 ## Phase 1 · Prove the integration before polishing
 
-After explicit implementation authorization and required account/access approvals:
+After the required account and access approvals:
 
 - Register/configure the least-privilege OAuth client through an approved secure flow.
 - Confirm redirect, state, PKCE, denial, reconnect, and server-side token handling.
 - Read an authorized plain-text draft, apply one exact separately approved test edit, and verify it by read-back plus Buffer UI.
 - Prove a second text-capable channel; establish draft/status/permission and special-content filters.
 
-Suggested timebox: first 3–4 focused build hours, adjusted to real access delays. Stop if credentials, channels, OAuth writes, or read-back cannot be verified. Do not mask a blocked integration with sample-mode UI.
+Stop the live check if credentials, channel eligibility, OAuth writes or read-back cannot be verified. Record the blocker with the [validation plan](../engineering/validation.md).
 
 ## Phase 2 · Complete one local correction loop
 
-Implement selected draft snapshots, manual span linking, literal fact edits, immutable previews and explicit approval. Build the pure patch planner with Unicode and overlap tests before remote batch writes. No runtime model, media, templates, analytics or external links fetching.
+The local workflow covers draft snapshots, manual span linking, literal fact edits, immutable previews and explicit approval. The patch planner has tests for Unicode selection and overlapping links.
 
 Exit: fixture suite proves only selected spans change; no-op and stale-baseline cases are refused; the whole workflow is keyboard-usable.
 
 ## Phase 3 · Wire safe-enough external execution
 
-Add owner/organization checks, sequential operations, durable state, per-post preflight/read-back, duplicate-click handling, fail-stop batches, and uncertainty reconciliation. Disclose the provider's missing atomic precondition. No automatic merge or rollback.
+The server implements account and organization checks, sequential apply, durable state, per-post preflight and read-back, single-use approval and read-only reconciliation. Provider behavior still needs live evidence. [Write protocol](../engineering/architecture.md)
 
 Exit: one real three-draft story and the failure matrix pass with evidence. Two channels are genuinely exercised. An ambiguous timeout is not marked failed and blindly retried.
 
@@ -51,7 +51,7 @@ Cut in this order: alternate literal renderings → decorative polish → extra 
 
 Never cut security or replace live integration with fictional receipts to meet the clock. If two-channel support is not verified, accurately label the reduced single-channel product and reconsider the submission story.
 
-## Task slices for a future implementer
+## Evidence by component
 
 | Slice | Dependency | Exit proof |
 | --- | --- | --- |

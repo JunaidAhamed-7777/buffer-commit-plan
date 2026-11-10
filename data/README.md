@@ -1,7 +1,7 @@
 # Data design assets
 
-Reserved for future schema documentation and synthetic fixtures. There is no database or migration runner yet.
+The SQLite store creates the current schema on first run. [Storage code](../src/server/storage/store.ts)
 
-- migrations: empty placeholder for schema changes after the storage choice is confirmed.
+Keep future schema migrations in `migrations/`.
 
-Never commit real account data, production database files or connection credentials. Do not create a migration just to make this skeleton look runnable.
+Keep account data, database files and credentials outside git.

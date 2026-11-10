@@ -2,33 +2,34 @@
 
 **Change the fact. Keep the voice.**
 
-A campaign correction desk for Buffer drafts. Patchwork is designed to link a shared venue, date label or URL across independently written posts, show exact text changes, and apply only reviewed corrections.
+A correction desk for Buffer drafts. Link a venue, date label or registration URL across drafts, then review the exact edits before applying them.
 
-**Project status: skeleton ready; implementation not started.** This repository contains the product design, engineering documents, contribution guidance and reserved application/test directories. It has no runnable app, dependencies, OAuth client, live integration or deployed demo.
+The local app includes a sample workspace and a configurable Buffer connection. Live OAuth, draft edits and hosted deployment still need verification.
 
-## The product
+## Try the sample
 
-A workshop moves from Studio 4 to Studio 9. Three drafts describe it in different voices. The intended flow is:
+With Node.js 24.2 or later and npm 11 or later, run:
 
-1. Select plain-text Buffer drafts and link the exact venue phrases.
-2. Change the venue once and inspect the proposed changes across the selected drafts.
-3. Approve the precise batch. Hold drafts that changed since review.
-4. See separate verified, failed or uncertain outcomes for each post.
+```sh
+npm ci
+npm run dev
+```
 
-This is the target experience, not a list of implemented features. The first version is deliberately draft-only: no publishing, scheduling, generative rewriting, media or threads. The API does not provide a documented atomic version check, so the design discloses the remaining concurrency risk.
+Open [localhost:3000](http://localhost:3000). The sample has three drafts for a workshop at Studio 4. Change **Venue** to **Studio 9**, review the proposed edits, then apply them to the sample and inspect the receipts. The sample uses fictional drafts and needs no credentials.
+
+Live changes are limited to eligible plain-text drafts. Patchwork checks each draft again before sending its approved edit. Buffer does not document a version check on `editPost`, so an edit in Buffer can still land between the check and the write.
 
 ## Start here
 
-- [Getting started](docs/development/getting-started.md): current state, future setup gates and directory ownership.
-- [Product specification](docs/product/specification.md): audience, scope and behavior.
-- [Architecture](docs/engineering/architecture.md): boundaries, review manifests and operation protocol.
-- [Roadmap](docs/development/roadmap.md): implementation sequence and stop gates.
-- [All documentation](docs/README.md): API research, UX, validation, privacy, contest and planning history.
-- [Contributing](CONTRIBUTING.md) and [agent instructions](AGENTS.md): how to continue without crossing the no-code boundary.
+- Set up the app, run tests and configure OAuth. [Getting started](docs/development/getting-started.md)
+- Read the scope and write protocol. [Product specification](docs/product/specification.md) · [Architecture](docs/engineering/architecture.md)
+- Check the remaining verification and release work. [Roadmap](docs/development/roadmap.md)
+- Find the API notes, privacy design and planning history. [Documentation](docs/README.md)
+- Review the repository conventions before changing code. [Contributing](CONTRIBUTING.md) · [Agent instructions](AGENTS.md)
 
 ## Repository layout
 
-| Path | Intended role |
+| Path | Role |
 | --- | --- |
 | src/app | Application pages, routes and composition |
 | src/components | Accessible review interface |
@@ -43,15 +44,7 @@ This is the target experience, not a list of implemented features. The first ver
 | docs/contest | Rules and submission requirements |
 | docs/planning | Preserved idea decisions and refinement history |
 | docs/research | Sources and open questions |
-| docs/evidence | Future sanitized proof; currently no app evidence |
-
-The application folders contain README placeholders or empty .gitkeep markers only. They are not framework-generated code.
-
-## Setup and checks
-
-There is nothing to install or run yet. Runtime versions, dependency manifests, local commands, environment configuration and test runners will be added when implementation begins. Do not treat documentation/link checks as application tests.
-
-Proposed direction: one TypeScript web application, a server-side Buffer adapter, pure deterministic patch logic and a small durable relational store. Final tooling and hosting remain open. No runtime AI is required for the core workflow.
+| docs/evidence | Rules for recording test and live integration evidence |
 
 ## Buffer Commit
 
@@ -59,6 +52,6 @@ This project is being prepared for [Buffer Commit](https://buffer.com/api/commit
 
 ## Evidence and limits
 
-The concept has been refined against the official API and adjacent native workflows. Buffer documents individual-edit friction for scheduled multi-channel posts; usefulness for this narrower draft-only product remains a hypothesis. Setup cost, real OAuth behavior and cross-channel editing still need testing. No customers, time savings, passing application tests or awards are claimed.
+Local and simulated tests cover parts of the correction workflow. Setup cost, real OAuth behavior and editing on two Buffer channels still need testing. See the [validation plan](docs/engineering/validation.md) for the evidence required before release.
 
-The working name is provisional. No software licence has been selected; public visibility alone does not grant an open-source licence. AI-assisted planning is disclosed in the [submission notes](docs/contest/submission-checklist.md).
+The working name and software licence are undecided. See the [submission notes](docs/contest/submission-checklist.md) for the AI assistance disclosure.

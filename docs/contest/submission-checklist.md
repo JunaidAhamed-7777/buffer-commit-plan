@@ -1,6 +1,6 @@
 # Submission evidence checklist
 
-**Current status: not built, not submitted.** Registration was previously confirmed. This repository does not establish a contest entry or any award.
+**Current status:** Local app built. Real OAuth, a verified Buffer edit, deployment and submission are pending. Registration was previously confirmed.
 
 ## Before a future final-submit decision
 
@@ -46,7 +46,7 @@ Write the final version only after the build can support it. Avoid future-tense 
 
 ## AI and provenance disclosure
 
-This planning package was prepared with AI assistance. A future project must disclose the actual development/design/model tools used and human decisions accurately. No runtime AI is currently required by the product design. Do not invent a model benchmark or imply the application uses AI merely because development was assisted.
+Codex assisted with planning and implementation. Patchwork computes its text changes from explicitly linked phrases. Record the tools used and human decisions accurately in the submission.
 
 ## Do not submit if
 

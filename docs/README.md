@@ -1,6 +1,6 @@
 # Patchwork documentation
 
-Patchwork is in the documentation and project-skeleton phase. Coding still needs explicit authorization. Design documents describe intended behavior; no application code has been written.
+Start with the [local setup](development/getting-started.md) to run the sample. The [validation plan](engineering/validation.md) records what still needs live Buffer evidence.
 
 ## Build from these
 
@@ -23,4 +23,4 @@ Patchwork is in the documentation and project-skeleton phase. Coding still needs
 - [Idea tournament](planning/idea-tournament.md)
 - [Refinement log](planning/refinement-log.md)
 
-Historical planning is preserved in these documents and git history. The latest [agent instructions](../AGENTS.md) and project status in the [README](../README.md) govern the current phase. No source/publication change itself authorizes implementation, deployment, credentials or live Buffer writes.
+The planning notes record decisions from earlier phases. Read the [agent instructions](../AGENTS.md) for the current authorization boundaries.

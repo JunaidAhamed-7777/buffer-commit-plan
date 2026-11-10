@@ -20,11 +20,9 @@ A hosted working app, OAuth authentication with Buffer, successful real API use,
 
 ## Status and authorization
 
-Registration was previously confirmed on 10 November. Registration is separate from creating an OAuth client, granting permissions, submitting the project, or winning. No credentials, client ID, live app, or submission are established by this planning work.
+Registration was confirmed on 10 November. The app now runs locally. Real Buffer authorization, draft edits, deployment and submission are pending.
 
-The current task authorizes public repository publication, project structure, documentation, placeholders and commits/pushes. It does not authorize implementation, persistent API access, social-account connection, Buffer writes, app deployment, paid hosting, external outreach or final entry submission.
-
-Before an authorized implementation begins, separately resolve: account readiness; exact OAuth permissions and secure credential setup; suitable non-sensitive test drafts/channels; hosting budget; public privacy information; and a real integration test. Do not block ordinary document refinement on those future actions.
+The owner authorized implementation and repository pushes. Confirm OAuth access, suitable test drafts and the exact live edit before the integration check. Hosting, spending and final submission require separate authorization. [Current boundaries](../../AGENTS.md)
 
 ## Terms that need attention before submission
 

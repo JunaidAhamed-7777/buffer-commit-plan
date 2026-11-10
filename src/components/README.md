@@ -1,5 +1,5 @@
 # Presentation components
 
-Placeholder for future fact chips, phrase selection, exact diffs, draft cards, held-item explanations and receipts. Keyboard interaction and non-color-only status are required.
+The workbench components render the campaign, phrase links, exact diffs and receipts. Preserve keyboard interaction and use text for each status.
 
-Components render known state and request explicit actions. They do not hold provider tokens, choose arbitrary organization IDs, or infer that an external write succeeded. No UI components exist yet.
+Components render the server's state and request explicit actions. The server checks organization access and records the result of each write.

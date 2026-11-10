@@ -1,6 +1,6 @@
 # Evaluation plan
 
-All results are **not run**. Targets below are proposed acceptance criteria, not demonstrated metrics. Do not fabricate users, timings, success rates, testimonials, or performance claims.
+The test suites cover local patching, storage, simulated Buffer responses, operation handling and the sample workflow. The cases below define what to verify. Real OAuth, draft edits, cross-channel support and usability measurements remain open.
 
 ## Product questions
 
@@ -73,4 +73,4 @@ These are release gates, not current achievements. Performance timing and access
 
 ## Evidence format
 
-For each executed case: date, environment/version, authorization context without secrets, fixture, steps, expected result, observed result, pass/fail/blocked, and sanitized artifact reference. Keep failures visible. A sample-mode screenshot cannot be filed as real integration proof. No application tests run in the current documentation phase.
+For each executed case, record the date, version, authorized environment, fixture, steps, expected and observed results, and a sanitized artifact reference. Label sample and simulated results so they remain distinct from live evidence. Keep failures visible.

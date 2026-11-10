@@ -1,5 +1,5 @@
 # Pure product rules
 
-Reserved for deterministic, framework-independent fact/rendering definitions, explicit text bindings, supported patch planning and immutable review manifests.
+This directory holds the patch planner, exact text bindings and workspace types. The patch planner validates Unicode ranges and rejects overlapping links before preparing diffs.
 
-This layer should not call Buffer, access a database, or read secrets. It must make Unicode/range behavior, overlaps, unchanged text and invalidated approval testable in isolation. No types, algorithms or implementations have been written.
+Keep these rules independent of Buffer, storage and framework code so they can be tested in isolation.

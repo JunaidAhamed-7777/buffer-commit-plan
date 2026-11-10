@@ -1,6 +1,6 @@
 # Security and privacy design
 
-This is a threat model and future checklist, not a claim that controls are implemented or that a privacy review passed.
+These controls are implemented locally. The release checks still require a live Buffer test and verification of the host's storage and logging configuration.
 
 ## Data minimization
 
@@ -8,18 +8,18 @@ Request only account/organization identity needed for isolation, chosen channel 
 
 Draft copy is private content even when intended for eventual publication. Avoid exposing it in URLs, logs, crash reports, analytics, or demo recordings. Use fictional low-stakes test copy with permission. Existing real drafts require user consent before any edit.
 
-## Threats and planned controls
+## Threats and controls
 
-| Threat | Planned mitigation | Residual limit |
+| Threat | Control | Residual limit |
 | --- | --- | --- |
-| OAuth CSRF or code interception | Random state, PKCE, exact redirect allowlist, short-lived server session | Must be implemented and tested, not assumed from framework defaults |
-| Token leaks | Server-side encrypted storage, secrets manager, HTTPS, redacted logs, no client persistence | Operational access/host controls still need review |
+| OAuth CSRF or code interception | Single-use state bound to a server session, PKCE and an exact callback origin | Verify the registered redirect and real callback |
+| Token leaks | Server-side AES-256-GCM, HTTP-only session cookie, HTTPS for hosted OAuth and sanitized errors | Host secrets, logs and storage permissions still need review |
 | Cross-tenant post edit | Server checks owner, selected organization, channel, post and current permissions | Client IDs alone are never authorization |
 | Malicious draft text | Render as escaped text; treat as data | No content can trigger tools, navigation or commands |
 | Stale review overwrite | Exact baseline comparison, fresh read, invalidate review, verify after edit | No remote CAS; a race window remains |
 | Duplicate dispatch | Durable local operation record, consumed approval, disable repeated UI submit | No documented provider idempotency guarantee |
 | Partial batch/failure | Per-post receipts and fail-stop behavior | No multi-post transaction or automatic rollback |
-| Browser/script injection | Escaped rendering, restrictive CSP, no arbitrary HTML preview | Audit actual implementation |
+| Browser/script injection | Escaped draft text and response headers that block framing, embedded objects and external form submissions | Review browser behavior before release |
 | URL SSRF/tracking | Treat registration URL as text; no server fetch | User can still enter misleading URLs; preview is not a safety certification |
 | Excessive OAuth access | Minimal requested scopes, no offline access initially | Confirm scopes really suffice in integration spike |
 | Data retained after disconnect | Delete tokens/session; separate campaign deletion control | Buffer's own drafts remain until user acts there |
@@ -33,15 +33,15 @@ Authorization to edit a draft is not authorization to schedule, publish, delete,
 
 ## Session choice
 
-Prefer short interactive access without offline refresh for the MVP. Keep tokens encrypted on the server for the active session, with an explicit expiry/deletion policy. The production retention choice must be published accurately before anyone connects. Do not claim “we store nothing” while retaining baselines or tokens.
+The app uses interactive OAuth. It keeps the access token encrypted in the server session for up to one hour, capped at the lifetime Buffer returns. The browser gets an HTTP-only session cookie. Disconnect deletes the session and its stored token. OAuth attempts expire within ten minutes and the app consumes a matching attempt once.
 
 If refresh is added later, request approval for the expanded persistent access and serialize single-use token rotation. Do not ask users to paste credentials into a chat or source file.
 
-## Retention proposal
+## Retention
 
-Default: keep only the active campaign plus minimal receipts. Offer clear deletion. Delete expired session secrets promptly. Propose automatic campaign/receipt deletion after a short published period, but do not promise a number until implemented and tested. Deleting local data must not delete Buffer posts. Backups and provider logs need separate, truthful handling.
+The live workspace stores the campaign and receipts for seven days from its last write. The anonymous sample expires after twelve hours. A workspace request clears expired records. Deleting a campaign clears its local copy while preserving unresolved write guards. Keep the SQLite file, its journal and backups on private storage. Deployment documentation should state the host's backup and logging retention.
 
-An unresolved write needs a minimal guard independent of campaign/session deletion so reconnecting cannot permit a second write while the first may still be pending. Keep only the identifiers/state described by the [reconciliation protocol](architecture.md#reconciliation-after-uncertainty), without tokens or draft copy. The originating account is provenance; switching authorized accounts must not bypass the post's guard. Define its retention and explain what campaign deletion removes before release.
+An unresolved write guard survives disconnect, campaign deletion and expiry. The guard keeps organization, post and operation identifiers. It has no automatic expiry because a later read cannot prove a pending edit has finished. See the [reconciliation protocol](architecture.md#reconciliation-after-uncertainty).
 
 ## Required pre-release checks
 
@@ -53,5 +53,3 @@ An unresolved write needs a minimal guard independent of campaign/session deleti
 - Provider error messages sanitized; no draft text sent to unnecessary telemetry.
 - Privacy/contact information describes actual storage, scopes and deletion.
 - Users understand OAuth grants access and that app-local checks cannot eliminate concurrent Buffer edits.
-
-No real customer data, persistent access changes, public release or external writing is authorized by this plan.
