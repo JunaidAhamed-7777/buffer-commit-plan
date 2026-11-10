@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How Patchwork handles data in its showcase and connected app.">
+  <meta name="theme-color" content="#f5f4f0">
+  <title>Privacy policy | Patchwork</title>
+  <link rel="icon" type="image/svg+xml" href="./mark.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="wrap navigation" aria-label="Main">
+      <a class="wordmark" href="./"><img src="./mark.svg" width="32" height="32" alt="">Patchwork</a>
+      <div class="nav-links"><a href="./">Back to showcase</a></div>
+    </nav>
+  </header>
+
+  <main class="wrap privacy-page" id="main">
+    <h1>Privacy policy</h1>
+    <p>Effective <time datetime="2026-11-11">11 November 2026</time></p>
+
+    <section aria-labelledby="showcase-data">
+      <h2 id="showcase-data">The showcase</h2>
+      <p>The demo uses fictional drafts. Replacement text and sample edits stay in browser memory. The showcase code adds no cookies or analytics. Vercel hosts the site and may process request information such as IP address and browser details. <a href="https://vercel.com/legal/privacy-notice">Vercel privacy notice</a></p>
+    </section>
+
+    <section aria-labelledby="buffer-data">
+      <h2 id="buffer-data">If you connect Buffer</h2>
+      <p>The separate Patchwork app requests <code>account:read</code>, <code>posts:read</code> and <code>posts:write</code> through Buffer OAuth. The app reads account, organization, channel and eligible draft details so you can select drafts and review edits. It sends approved draft edits to Buffer when you apply them. <a href="https://buffer.com/legal#privacy-policy">Buffer privacy policy</a></p>
+      <p>The app uses an HTTP-only session cookie and stores the Buffer access token encrypted on the server. A connected session lasts up to one hour. The instance’s SQLite database holds draft copies, linked phrases, reviews and receipts. A campaign expires seven days after its last saved change. The app clears expired records when a workspace is opened.</p>
+    </section>
+
+    <section aria-labelledby="remove-data">
+      <h2 id="remove-data">Remove campaign data</h2>
+      <p>Use <strong>Clear campaign</strong> to remove draft copies, links, reviews and receipts from Patchwork. <strong>Disconnect</strong> ends the session and deletes its stored token. You can revoke Patchwork’s access in Buffer. If a write has an unknown outcome, Patchwork retains the organization, post and operation identifiers to prevent a duplicate edit. Those identifiers have no automatic expiry.</p>
+    </section>
+
+    <section aria-labelledby="privacy-contact">
+      <h2 id="privacy-contact">Questions</h2>
+      <p>For questions that contain no private information, use the <a href="https://github.com/JunaidAhamed-7777/patchwork/issues">public issue tracker</a>. Arrange a verified private channel with the maintainer before sharing credentials, draft text or other private details. <a href="https://github.com/JunaidAhamed-7777/patchwork/blob/main/SECURITY.md">Security reporting guidance</a></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-content">
+      <div><p class="footer-title">Patchwork</p><p>Draft correction for Buffer, built by Junaid Ahamed.</p></div>
+      <a href="./">Back to showcase</a>
+    </div>
+  </footer>
+</body>
+</html>

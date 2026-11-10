@@ -74,6 +74,8 @@ This English-language workbench serves a solo creator repairing details after dr
 
 The [application stylesheet](src/app/globals.css) owns runtime tokens. The frontmatter mirrors its shared values. `primary`, `success`, `danger` and `warning` correspond to `--blue`, `--green`, `--red` and `--amber`. The layout bundles Geist locally.
 
+The showcase carries the Canva identity into a small proof mark. Blue brackets frame a short underline, like the marked phrase in the draft editor. Use the mark beside the wordmark and as the favicon. The showcase uses system fonts and the same paper, ink and blue. The first example is a proof sheet with a blue top rule, followed by the sample editor.
+
 ## Colors
 
 Warm paper separates the workspace from the lighter draft sheets. Blue identifies selection, keyboard focus and the primary action. Red and green identify removed and added text and always appear with text labels. Amber marks an item that needs attention. Keep the root scrollbar visible and let forced colors use the browser palette.

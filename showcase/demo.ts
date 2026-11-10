@@ -120,7 +120,7 @@ function render(moveFocus = false) {
   reviewButton.disabled = view.stage === 'result';
   if (view.stage === 'drafts') {
     heading.textContent = 'Sample drafts';
-    note.textContent = 'The blue underlines show the venue phrases linked in these drafts.';
+    note.textContent = 'Underlined phrases are linked to the venue.';
   } else if (view.stage === 'review') {
     heading.textContent = 'Review sample edits';
     note.textContent = 'Check the words removed and added, then choose which drafts to update.';
