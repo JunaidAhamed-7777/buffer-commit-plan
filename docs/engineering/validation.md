@@ -39,6 +39,8 @@ A planning-time alternative is one honest self-test on seeded fixtures, explicit
 | Successful item updates its baseline | Remaining operation items still use their immutable approved manifest |
 | Lost response after apply | Outcome unknown until reconciliation; no blind retry |
 | Unknown request followed by old-text read | Remains blocked without provider evidence; fresh approval alone cannot authorize a supposedly safe retry |
+| Unknown request followed by intended-text or third-text read | Record the observed text; request remains Outcome unknown and write-blocked without completion evidence |
+| Unknown request followed by logout/reconnect or campaign deletion/recreation | Same provider post remains write-blocked; removing campaign copy or session secrets does not erase the unresolved-write guard |
 | Read-back has third-party changed text | No green success; fresh review required |
 | Local cancellation during request | Stops only unstarted operations, not claimed remote cancellation |
 | Browser closes while applying | Durable operation resumes by read/reconcile |

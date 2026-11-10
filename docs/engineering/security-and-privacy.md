@@ -41,6 +41,8 @@ If refresh is added later, request approval for the expanded persistent access a
 
 Default: keep only the active campaign plus minimal receipts. Offer clear deletion. Delete expired session secrets promptly. Propose automatic campaign/receipt deletion after a short published period, but do not promise a number until implemented and tested. Deleting local data must not delete Buffer posts. Backups and provider logs need separate, truthful handling.
 
+An unresolved write needs a minimal guard independent of campaign/session deletion so reconnecting cannot permit a second write while the first may still be pending. Keep only provider account, organization, post and operation identifiers/state for this purpose, without tokens or draft copy. Define its retention and explain what campaign deletion removes before release. See the [reconciliation protocol](architecture.md#reconciliation-after-uncertainty).
+
 ## Required pre-release checks
 
 - Credentials absent from git, client bundles, screenshots and logs.

@@ -24,7 +24,7 @@ Confirmation states the exact count and action: “Apply these 2 draft changes�
 
 Each row shows intended change, result state, verification time, and a verified Buffer destination link if the API or observed UI supplies one. Never manufacture a deep-link format. If none is available, show channel/post identifiers with instructions to find the draft in Buffer.
 
-Show errors in everyday language. Examples: “This draft changed since your review. Refresh it before applying.” “We could not confirm whether Buffer saved this change. Check its current text before retrying.” Never expose tokens or raw provider internals.
+Show errors in everyday language. Examples: “This draft changed since your review. Refresh it before applying.” “We could not confirm whether Buffer saved this change. You can check the draft, but further changes here stay blocked until this request is resolved.” Never expose tokens or raw provider internals.
 
 ## Proposed two-minute recording
 

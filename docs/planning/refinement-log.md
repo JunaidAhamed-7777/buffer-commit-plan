@@ -78,3 +78,9 @@ Real OAuth draft editing across two channels; setup burden versus manual edits; 
 The owner requested public visibility and a repository structure ready for the actual project, while explicitly keeping implementation out of scope. Existing design documents moved into product, engineering, development, contest, planning and research sections. Source/server/test/data/assets directories now have README placeholders or empty markers, with no application code or framework scaffolding.
 
 The root README now describes Patchwork and its honest pre-implementation status. Future setup, contribution and security guidance were added. Planning commits remain in git history; no history rewrite or licence selection is part of this transition.
+
+## Pass 10 · Keep text observations separate from request completion
+
+11 November 2026. Repository review found that an intended-text read could appear to resolve a timed-out write, and receipt copy suggested checking text before retrying. Another editor could produce that text while the earlier request remains pending. Logout or campaign replacement also lacked an explicit rule preserving the unresolved-write block.
+
+Decision: all observed text states leave an unresolved request write-blocked until provider completion evidence exists. Preserve a minimal post-level guard across session/campaign changes, with retention disclosed before release. Updated receipt wording and acceptance cases. This is a design correction; no provider request or application test was run.

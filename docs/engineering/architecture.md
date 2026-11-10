@@ -29,6 +29,7 @@ The browser handles phrase selection and diff rendering. The server owns identit
 | Binding | Post, baseline fingerprint, exact range/text/context, rendering | Non-overlapping and explicit |
 | Review | Campaign revision, selected posts, before/after text fingerprints, exact proposed text, expiry, approval | Bound to owner and current local revision |
 | Operation | Review reference, local operation key, per-post state, attempt time, request outcome | Duplicate clicks reuse same local record |
+| Unresolved write guard | Provider account, organization, post ID and unresolved operation reference | Blocks further writes to that post across sessions and campaigns |
 | Receipt | Intended/observed fingerprints, verification time, status, redacted failure | Does not claim remote idempotency or permanent state |
 
 Full baseline text is needed to generate precise replacements. A hash is a change detector, not confidentiality or proof of truth. Treat campaign copy as private user content. Keep retention short and explicit.
@@ -54,14 +55,18 @@ For each selected post, sequentially:
 3. If anything changed, mark Needs review and stop before this write. Do not merge silently. Already completed posts remain completed; later posts are Not attempted.
 4. Record Applying durably before the request. Submit the minimal text edit only. Never include stale arrays or scheduling fields just because they were in the snapshot.
 5. A definite API rejection becomes Failed. A timeout/disconnect after dispatch becomes Outcome unknown, not Failed.
-6. After apparent success, read current state. Mark Verified only when intended text and supported draft state match. Unexpected status or text is Needs review/Outcome unknown with precise evidence, not green success.
+6. After a confirmed success response, read current state. Mark Verified only when intended text and supported draft state match. Unexpected status or text is Needs review/Outcome unknown with precise evidence, not green success. A matching read alone cannot establish completion of an uncertain request.
 7. Store the new baseline and refresh affected bindings only from the verified exact text. These internal result updates do not change or invalidate the remaining items in the operation’s immutable manifest. A user edit cannot mutate that manifest. Finish with per-post totals.
 
 Fail-stop is the default: an unexpected result halts remaining writes. A later batch can resume only with a fresh review of unresolved posts. There is no automatic rollback of successful edits.
 
 ## Reconciliation after uncertainty
 
-Read the current post before deciding anything. If it exactly matches the intended result and remains a supported draft, record “Matches intended text, verified at [time]”; do not claim which actor made the change. If it matches the old text, an earlier request might still be pending. Keep the post blocked: a fresh approval is not evidence that the earlier request finished. Permit another mutation only when sufficient provider evidence establishes the earlier operation is no longer in flight; otherwise retain the uncertain state and offer read-only reconciliation/manual inspection. Do not invent a safe timeout or assume that another read resolves this. A third text is a conflict needing operator review.
+Record current text separately from request completion. An intended-text match can be reported as “Matches intended text, observed at [time]”; it does not prove which actor made the change or that the earlier request has finished. Old text can mean the request has not applied yet. A third text is a conflict needing operator review. None of these observations alone clears an unresolved request.
+
+Keep the item in Outcome unknown and block further writes to that post until sufficient provider evidence establishes that the earlier request is no longer in flight. A fresh approval, elapsed time or another matching read is not completion evidence. If no supported way to obtain that evidence is available, offer read-only reconciliation and manual inspection; do not invent a safe retry interval. After completion is established, compare current text and eligibility again before assigning a final outcome or preparing a fresh review.
+
+The unresolved-write guard belongs to the provider account, organization and post, independently of the campaign or session. Check it before every dispatch. Cancellation, logout, reconnect and campaign deletion/recreation must not clear it. Retain only the identifiers and operation state needed for that guard, without tokens or draft copy; define and disclose its retention before release.
 
 App-local operation keys prevent repeated local submission. They are not provider-supported idempotency keys. A crashed process resumes at reconciliation, not at “send again.”
 

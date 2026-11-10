@@ -56,10 +56,10 @@ If the API cannot distinguish a special post from a supported plain-text draft, 
 | Approved | Exact local version and post text approved | Apply once |
 | Checking | Re-reading current Buffer state | Wait or cancel remaining work |
 | Applying | One request in flight | No duplicate submit |
-| Verified | Read-back matches intended text and remains draft | View receipt |
+| Verified | Request completion established; read-back matches intended text and remains draft | View receipt |
 | Needs review | Baseline/status/permission changed | Refresh and relink |
 | Failed | API definitely rejected the operation | Resolve reason and re-preview |
-| Outcome unknown | Request may have applied; evidence inconclusive | Reconcile, never blindly retry |
+| Outcome unknown | Write outcome unresolved | Check current state; further writes stay blocked until resolved |
 | Not attempted | Batch stopped before this item | Start a newly reviewed batch |
 
 “Verified” is an observation at a timestamp, not a lock on future edits. A local operation lock cannot prevent changes in Buffer or another integration.
