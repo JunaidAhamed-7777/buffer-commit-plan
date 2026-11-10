@@ -1,6 +1,6 @@
 # Patchwork · Buffer Commit
 
-**Change the plan. Keep your voice.**
+**Change the fact. Keep the voice.**
 
 Patchwork is a campaign correction desk for people who run workshops, launches, and community events. Link the same fact across different Buffer drafts. When that fact changes, review the exact words that need changing, then apply the approved patches to Buffer.
 
@@ -8,9 +8,9 @@ Patchwork is a campaign correction desk for people who run workshops, launches, 
 
 ## The moment worth building
 
-A workshop moves from Saturday to Sunday. Its LinkedIn announcement, Bluesky reminder, and follow-up draft each say it differently. Patchwork shows the affected phrases, changes only the linked facts, and leaves the surrounding copy alone. A draft edited elsewhere is held for fresh review instead of silently overwritten.
+A workshop moves from Studio 4 to Studio 9. Its LinkedIn announcement, Bluesky reminder, and follow-up draft each say it differently. Patchwork shows the affected phrases, changes only the linked facts, and leaves the surrounding copy alone. A draft edited elsewhere is held for fresh review instead of silently overwritten.
 
-The proposed distinction is **fact-linked, reviewed repair**, not another caption generator or content calendar. Buffer already does drafting, templates, channel variants, and scheduling. Its help center currently says existing multi-channel posts must be edited individually. [Source](https://support.buffer.com/articles/scheduling-posts-4Qdld7giAZ).
+The proposed distinction is **fact-linked, reviewed repair**, not another caption generator or content calendar. Buffer already does drafting, templates, channel variants, and scheduling. Its help center currently says existing scheduled multi-channel posts must be edited individually. Relevance to our narrower draft-only workflow remains a hypothesis to validate. [Source](https://support.buffer.com/articles/scheduling-posts-4Qdld7giAZ).
 
 ## Read in this order
 
