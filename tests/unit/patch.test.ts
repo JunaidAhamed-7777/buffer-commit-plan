@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { bindPhrase, findOccurrences, planPatch, type Draft } from "../../src/domain/patch.ts";
+import { bindPhrase, findOccurrences, planPatch, type Binding, type Draft, type ReviewItem } from "../../src/domain/patch.ts";
 
 const first: Draft = {
   id: "first",
@@ -74,4 +74,92 @@ test("leaves unchanged facts out and refuses blank or hidden replacement text", 
   assert.throws(() => planPatch([first], links, "venue", " \n"), /contains text/);
   assert.throws(() => planPatch([first], links, "venue", "Studio \u202e9"), /hidden control characters/);
   assert.throws(() => planPatch([first], links, "venue", "\ud800"), /hidden control characters/);
+});
+
+test("requires visible text but keeps joiners and variation selectors in visible graphemes", () => {
+  const link = bindPhrase(first, "venue", 0, 8, []);
+  const blanks = ["\u200b", "\u200d", "\ufe0f", "\u00ad", "\u034f", "\u2800", "\u115f"];
+  for (const blank of blanks) {
+    const draft = { ...first, text: blank };
+    assert.throws(() => bindPhrase(draft, "venue", 0, blank.length, []), /contains text/);
+    assert.deepEqual(findOccurrences(draft.text, blank), []);
+    assert.throws(() => planPatch([first], [link], "venue", ` ${blank} `), /contains text/);
+  }
+
+  const replacement = "👩🏽‍🎨 ❤️";
+  const [item] = planPatch([first], [link], "venue", replacement);
+  assert.equal(item.after, replacement + first.text.slice(8));
+  assert.deepEqual(findOccurrences(item.after, replacement), [{ start: 0, end: replacement.length }]);
+});
+
+test("checks the final UTF-16 length after both growing and shrinking links", () => {
+  const draft = { ...first, text: "x / Studio 4" };
+  const links = [bindPhrase(draft, "venue", 0, 1, []), bindPhrase(draft, "venue", 4, 12, [])];
+
+  assert.equal(planPatch([draft], links, "venue", "🇮🇳", 11)[0].after, "🇮🇳 / 🇮🇳");
+  assert.throws(() => planPatch([draft], links, "venue", "🇮🇳", 10), /draft too long/);
+  assert.deepEqual(planPatch([draft], [links[1]], "venue", "Studio 4", 10), []);
+});
+
+test("rejects a dense expansion beyond the preview limit", () => {
+  const draft = { ...first, text: "x ".repeat(500) };
+  const links = Array.from({ length: 500 }, (_, index) => ({
+    draftId: draft.id,
+    factId: "venue",
+    start: index * 2,
+    end: index * 2 + 1,
+    text: "x",
+    baseline: draft.text,
+  }));
+
+  assert.throws(() => planPatch([draft], links, "venue", "y".repeat(2_000), 10_000), /draft too long/);
+});
+
+test("preserves text and original edit offsets across seeded multilingual draft combinations", () => {
+  let seed = 0x1ed85472;
+  function pick<T>(items: readonly T[]): T {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    return items[(seed >>> 0) % items.length];
+  }
+
+  const phrases = ["Studio 4", "café", "cafe\u0301", "👩🏽‍🎨", "🇮🇳", "京都", "กรุงเทพฯ", "المطبعة"];
+  const separators = [" / ", "\r\n", " · "];
+  for (let scenario = 0; scenario < 600; scenario++) {
+    const drafts: Draft[] = [];
+    const bindings: Binding[] = [];
+    const expected: ReviewItem[] = [];
+    const replacement = pick(phrases);
+    const draftCount = pick([1, 2, 3, 4]);
+    for (let index = 0; index < draftCount; index++) {
+      const blocks = Array.from({ length: pick([1, 2, 8, 20]) }, () => ({
+        text: pick(phrases),
+        factId: pick(["venue", "date", undefined]),
+        separator: pick(separators),
+      }));
+      const id = `draft-${index}`;
+      const channel = pick(["Bluesky", "LinkedIn"]);
+      const before = blocks.map(({ text, separator }) => text + separator).join("");
+      drafts.push({ id, channel, text: before });
+
+      let start = 0;
+      const edits: ReviewItem["edits"] = [];
+      for (const { text, factId, separator } of blocks) {
+        const end = start + text.length;
+        if (factId) bindings.push({ draftId: id, factId, start, end, text, baseline: before });
+        if (factId === "venue" && text !== replacement) {
+          edits.push({ start, end, before: text, after: replacement });
+        }
+        start = end + separator.length;
+      }
+      if (edits.length) {
+        const after = blocks.map(({ text, factId, separator }) =>
+          (factId === "venue" ? replacement : text) + separator).join("");
+        expected.push({ draftId: id, channel, before, after, edits });
+      }
+    }
+
+    assert.deepEqual(planPatch(drafts, bindings.reverse(), "venue", replacement), expected, `scenario ${scenario}`);
+  }
 });

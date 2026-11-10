@@ -23,6 +23,9 @@ const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 // Allow tabs, line breaks, and joiners used in ordinary writing. Reject hidden
 // direction overrides and control codes whose effect is hard to inspect in a diff.
 const unsafeText = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069\p{Surrogate}]/u;
+// Joiners and variation selectors can be part of visible text, but cannot
+// stand alone as a phrase. Braille's blank cell also renders as whitespace.
+const visibleText = /[^\s\p{Default_Ignorable_Code_Point}\u2800]/u;
 
 function graphemeBoundaries(text: string): Set<number> {
   const boundaries = new Set([text.length]);
@@ -35,7 +38,7 @@ function exactPhrase(text: string, start: number, end: number, boundaries: Reado
     throw new Error("Select whole characters in the draft.");
   }
   const phrase = text.slice(start, end);
-  if (!phrase.trim()) throw new Error("Select a phrase that contains text.");
+  if (!visibleText.test(phrase)) throw new Error("Select a phrase that contains text.");
   return phrase;
 }
 
@@ -55,7 +58,7 @@ function checkedLinks(draft: Draft, links: readonly Binding[], boundaries: Reado
 }
 
 export function findOccurrences(text: string, phrase: string): { start: number; end: number }[] {
-  if (!phrase.trim() || unsafeText.test(text) || unsafeText.test(phrase)) return [];
+  if (!visibleText.test(phrase) || unsafeText.test(text) || unsafeText.test(phrase)) return [];
 
   const boundaries = graphemeBoundaries(text);
   const matches: { start: number; end: number }[] = [];
@@ -88,9 +91,10 @@ export function planPatch(
   bindings: readonly Binding[],
   factId: string,
   replacement: string,
+  maxDraftLength = Infinity,
 ): ReviewItem[] {
   if (!factId.trim()) throw new Error("Choose a fact to change.");
-  if (!replacement.trim()) throw new Error("Enter a replacement that contains text.");
+  if (!visibleText.test(replacement)) throw new Error("Enter a replacement that contains text.");
   if (unsafeText.test(replacement)) throw new Error("Remove hidden control characters from the replacement.");
 
   const draftsById = new Map(drafts.map((draft) => [draft.id, draft]));
@@ -109,12 +113,18 @@ export function planPatch(
       bindings.filter((link) => link.draftId === draft.id),
       graphemeBoundaries(draft.text),
     );
+    const changes = links.filter((link) => link.factId === factId && link.text !== replacement);
+    if (changes.length === 0) continue;
+
+    // Reject oversized previews before building and segmenting the new text.
+    const length = changes.reduce((total, link) => total + replacement.length - link.text.length, draft.text.length);
+    if (length > maxDraftLength) throw new Error("The replacement makes a draft too long.");
+
     const edits: TextEdit[] = [];
     const replacedRanges: { start: number; end: number }[] = [];
     let after = "";
     let cursor = 0;
-    for (const link of links) {
-      if (link.factId !== factId || link.text === replacement) continue;
+    for (const link of changes) {
       after += draft.text.slice(cursor, link.start);
       const start = after.length;
       after += replacement;
@@ -122,7 +132,6 @@ export function planPatch(
       edits.push({ start: link.start, end: link.end, before: link.text, after: replacement });
       cursor = link.end;
     }
-    if (edits.length === 0) continue;
     after += draft.text.slice(cursor);
 
     const boundaries = graphemeBoundaries(after);
