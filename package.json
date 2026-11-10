@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:showcase": "tsc -p showcase/tsconfig.json && node scripts/copy-showcase.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --test",

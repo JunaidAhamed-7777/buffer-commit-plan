@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="See how Patchwork links a changed detail across Buffer drafts, previews exact edits and applies only the drafts you approve.">
+  <meta name="theme-color" content="#f5f4f0">
+  <title>Patchwork · A copy desk for Buffer drafts</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./showcase/demo.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="wrap navigation" aria-label="Main">
+      <a class="wordmark" href="#top"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>Patchwork</a>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="https://github.com/JunaidAhamed-7777/patchwork">GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="wrap hero" id="top" aria-labelledby="hero-heading">
+      <div class="hero-copy">
+        <p class="overline"><span></span>A copy desk for Buffer drafts</p>
+        <h1 id="hero-heading">Change the fact.<br><em>Keep the voice.</em></h1>
+        <p class="lede">When a workshop moves, the old venue is still in your drafts. Link those phrases in Patchwork, review the exact edits and apply the ones you approve.</p>
+        <a class="button primary" href="#demo">Try the sample <span aria-hidden="true">↓</span></a>
+      </div>
+
+      <figure class="proof" aria-labelledby="proof-caption">
+        <figcaption class="proof-header" id="proof-caption">
+          <span>Sample campaign</span><span>Venue correction</span>
+        </figcaption>
+        <div class="proof-paper">
+          <p class="proof-label">Bluesky draft <span>01</span></p>
+          <div class="proof-line"><span>Before</span><p>Bring a notebook and a question. Meet us at <del>Studio 4</del> on Saturday.</p></div>
+          <div class="proof-line"><span>After</span><p>Bring a notebook and a question. Meet us at <ins>Studio 9</ins> on Saturday.</p></div>
+        </div>
+        <div class="proof-footer"><span class="stamp" aria-hidden="true">↳</span><p>One linked phrase changes. The rest of the draft stays intact.</p></div>
+      </figure>
+    </section>
+
+    <section class="workflow" id="how" aria-labelledby="workflow-heading">
+      <div class="wrap">
+        <h2 id="workflow-heading">How Patchwork works</h2>
+        <ol class="workflow-steps">
+          <li><span class="step" aria-hidden="true">01</span><div><h3>Link the phrase</h3><p>Mark the words that stand for the same detail in each draft.</p></div></li>
+          <li><span class="step" aria-hidden="true">02</span><div><h3>Review the edits</h3><p>Enter the new detail once and compare the proposed changes in context.</p></div></li>
+          <li><span class="step" aria-hidden="true">03</span><div><h3>Choose what to apply</h3><p>Select the drafts you want to update and check each result.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="wrap demo" id="demo" aria-labelledby="demo-heading">
+      <div class="demo-intro">
+        <div><p class="overline"><span></span>Interactive sample</p><h2 id="demo-heading">Move the workshop.</h2></div>
+        <p>Three fictional drafts already have their venue linked. Try a new room, review each edit, then choose which drafts to update. The sample runs in your browser.</p>
+      </div>
+      <noscript><p class="form-error">Enable JavaScript to try the sample. The example above shows the before and after.</p></noscript>
+      <div class="workbench" id="workbench" hidden>
+        <aside class="fact-panel" aria-label="Venue controls">
+          <div class="panel-heading"><h3>Venue</h3><span id="link-count">3 linked drafts</span></div>
+          <dl class="saved-detail"><dt>Original venue</dt><dd>Studio 4</dd></dl>
+          <form id="venue-form" novalidate>
+            <label for="venue">New venue</label>
+            <input id="venue" name="venue" value="Studio 9" maxlength="90" required aria-describedby="venue-hint">
+            <p id="venue-hint" class="field-hint">Only the linked phrase will change.</p>
+            <p id="venue-error" class="form-error" hidden></p>
+            <button class="button primary" id="review-button" type="submit">Review changes <span aria-hidden="true">→</span></button>
+          </form>
+          <button class="text-button" id="reset-button" type="button">Reset sample</button>
+        </aside>
+
+        <div class="draft-panel">
+          <div class="draft-heading"><h3 id="draft-heading" tabindex="-1">Sample drafts</h3><span class="sample-tag">Fictional data</span></div>
+          <p class="draft-note" id="draft-note">The blue underlines show the venue phrases linked in these drafts.</p>
+          <p class="result" id="result" role="status" hidden></p>
+          <ul class="draft-list" id="draft-list" aria-labelledby="draft-heading"></ul>
+          <div id="review-actions" class="review-actions" hidden>
+            <p id="selection-count" role="status"></p>
+            <button class="button primary" id="apply-button" type="button">Apply selected sample edits</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-content">
+      <div><p class="footer-title">Patchwork</p><p>Draft correction for Buffer, built by Junaid Ahamed.</p></div>
+      <a href="https://github.com/JunaidAhamed-7777/patchwork">Explore the repository <span aria-hidden="true">↗</span></a>
+    </div>
+  </footer>
+</body>
+</html>

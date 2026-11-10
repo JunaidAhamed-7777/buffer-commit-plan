@@ -6,6 +6,10 @@ A correction desk for Buffer drafts. Link a venue, date label or registration UR
 
 The local app includes a sample workspace and a configurable Buffer connection. Live OAuth, draft edits and hosted deployment still need verification.
 
+## Project showcase
+
+The showcase explains the workflow and lets visitors review and apply edits to fictional drafts in their browser. It uses the same patch planner as the app. Build it with `npm run build:showcase` and serve `dist/showcase`. [Vercel Hobby setup](docs/development/getting-started.md#publish-the-showcase-on-vercel)
+
 ## Try the sample
 
 With Node.js 24.2 or later and npm 11 or later, run:

@@ -22,6 +22,14 @@ Open [the HTTPS workspace](https://localhost:3000). The launcher prints the fing
 
 Use a dedicated, unscheduled plain-text draft on an already connected Bluesky or LinkedIn channel. The first live check needs an approved read, one exact edit and a read-back. Live OAuth and channel support are pending verification.
 
+## Publish the showcase on Vercel
+
+The showcase is a static project page with a browser-only demo. `npm run build:showcase` compiles the patch planner and copies the public assets into `dist/showcase`.
+
+In the Vercel web dashboard, import this GitHub repository into your Hobby account. Keep the root directory at the repository root and choose **Other** as the framework preset. Use Node.js 24.x. Set **Build Command** to `npm run build:showcase` and **Output Directory** to `dist/showcase`. Leave environment variables empty. [Vercel build settings](https://vercel.com/docs/builds/configure-a-build)
+
+These settings publish the showcase. Hosting the connected app on Vercel Functions would require a shared transactional database for OAuth sessions, reviews and write guards because the local SQLite file cannot persist across instances. [Vercel SQLite guidance](https://vercel.com/kb/guide/is-sqlite-supported-in-vercel)
+
 ## Checks
 
 ```sh
