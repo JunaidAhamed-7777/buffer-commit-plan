@@ -42,7 +42,10 @@ A planning-time alternative is one honest self-test on seeded fixtures, explicit
 | Unknown request followed by intended-text or third-text read | Record the observed text; request remains Outcome unknown and write-blocked without completion evidence |
 | Unknown request followed by logout/reconnect or campaign deletion/recreation | Same provider post remains write-blocked; removing campaign copy or session secrets does not erase the unresolved-write guard |
 | Read-back has third-party changed text | No green success; fresh review required |
-| Local cancellation during request | Stops only unstarted operations, not claimed remote cancellation |
+| Cancellation or logout during a paused preflight read | If the stop wins before the durable dispatch claim, item is Not attempted and no request is sent |
+| Cancellation after the durable dispatch claim | Stops only unstarted items; claimed item keeps its own outcome without a remote-cancellation claim |
+| Second campaign or worker targets a post already claimed for dispatch | Durable post guard prevents a second claim, even before the first request returns |
+| Process crashes after dispatch claim, before a response is recorded | Guard survives; reconcile instead of dispatching again, even if the crash may have preceded the send |
 | Browser closes while applying | Durable operation resumes by read/reconcile |
 | OAuth denial/state mismatch | No connected state or actions; useful recovery |
 | Token expiry/revocation | Prompt reconnect; no credential leakage |

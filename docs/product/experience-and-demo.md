@@ -18,7 +18,7 @@ Top line: “Venue: Studio 4 → Studio 9”. Below: “3 drafts affected · 2 r
 
 Each card contains a deletion/addition diff with text labels, full context toggle, checked selection, and a specific status. An “Unchanged” strip can say “Other text unchanged” only if comparison proves it. Do not assert that media or timing was preserved unless those fields were observed and checked. MVP excludes media and scheduled posts entirely.
 
-Confirmation states the exact count and action: “Apply these 2 draft changes”. Pressing it consumes the approval into one immutable operation. Its approved items can finish sequentially; the approval cannot start a second operation. A cancel control stops unstarted operations; it must not imply an in-flight external request was cancelled.
+Confirmation states the exact count and action: “Apply these 2 draft changes”. Pressing it consumes the approval into one immutable operation. Its approved items can finish sequentially; the approval cannot start a second operation. Label cancellation “Stop remaining changes” and explain that a change already being applied may still finish. Keep that item's result visible.
 
 ## Receipts view
 

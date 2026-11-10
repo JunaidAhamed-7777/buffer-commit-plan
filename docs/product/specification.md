@@ -55,7 +55,7 @@ If the API cannot distinguish a special post from a supported plain-text draft, 
 | Ready to review | Proposed text derived from current baseline | Inspect diff |
 | Approved | Exact local version and post text approved | Apply once |
 | Checking | Re-reading current Buffer state | Wait or cancel remaining work |
-| Applying | One request in flight | No duplicate submit |
+| Applying | A reviewed change is being applied | Stop remaining changes; this one may still finish |
 | Verified | Request completion established; read-back matches intended text and remains draft | View receipt |
 | Needs review | Baseline/status/permission changed | Refresh and relink |
 | Failed | API definitely rejected the operation | Resolve reason and re-preview |

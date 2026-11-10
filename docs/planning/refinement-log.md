@@ -84,3 +84,9 @@ The root README now describes Patchwork and its honest pre-implementation status
 11 November 2026. Repository review found that an intended-text read could appear to resolve a timed-out write, and receipt copy suggested checking text before retrying. Another editor could produce that text while the earlier request remains pending. Logout or campaign replacement also lacked an explicit rule preserving the unresolved-write block.
 
 Decision: all observed text states leave an unresolved request write-blocked until provider completion evidence exists. Preserve a minimal post-level guard across session/campaign changes, with retention disclosed before release. Updated receipt wording and acceptance cases. This is a design correction; no provider request or application test was run.
+
+## Pass 11 · Define when cancellation stops a write
+
+11 November 2026. Cancellation was checked before the provider read, leaving a gap while that read was in progress. A cancel or logout could arrive before dispatch without another stated check.
+
+Decision: recheck session and cancellation when durably claiming the item for dispatch, and acquire its post guard in the same step. A stop that wins first prevents the send; an already claimed item keeps its own outcome. Added acceptance cases for both orderings, concurrent claims and a crash after the claim. No code or executable tests were added.

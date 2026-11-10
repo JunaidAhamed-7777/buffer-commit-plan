@@ -46,14 +46,14 @@ Full baseline text is needed to generate precise replacements. A hash is a chang
 
 ## Apply protocol
 
-At batch start, validate the review once under an app-local operation lock. Consume its approval into one durable operation with an immutable approved manifest. Duplicate submissions return that operation; they do not dispatch a second batch. Freeze campaign edits while it is active, or make cancellation stop unstarted items. Account/session changes stop the operation.
+At batch start, validate the review once under an app-local operation lock. Consume its approval into one durable operation with an immutable approved manifest. Duplicate submissions return that operation; they do not dispatch a second batch. Freeze campaign edits while it is active, or cancel remaining work before editing. Cancellation and account/session changes stop unstarted items; they do not cancel a request already claimed for dispatch.
 
 For each selected post, sequentially:
 
 1. Load the active operation and its immutable item, not a fresh reusable approval. Check owner, organization, item state and cancellation.
 2. Read the post again from Buffer. Re-run the complete supported-content classifier, including media, thread, annotation, link-metadata, status and permission exclusions. Compare exact text and relevant state with the approved baseline. Newly unsupported content is a conflict even when top-level text is unchanged.
 3. If anything changed, mark Needs review and stop before this write. Do not merge silently. Already completed posts remain completed; later posts are Not attempted.
-4. Record Applying durably before the request. Submit the minimal text edit only. Never include stale arrays or scheduling fields just because they were in the snapshot.
+4. Immediately before dispatch, atomically claim the item as Applying and create its post-level write guard under durable coordination shared by all app workers. Recheck the active owner/session, cancellation, item state and any existing guard in that same claim. If cancellation or logout wins before the claim, mark the item Not attempted and do not send. Once the claim wins, cancellation stops later items; this item may still be sent and needs its own outcome. Submit the minimal text edit only. Never include stale arrays or scheduling fields just because they were in the snapshot.
 5. A definite API rejection becomes Failed. A timeout/disconnect after dispatch becomes Outcome unknown, not Failed.
 6. After a confirmed success response, read current state. Mark Verified only when intended text and supported draft state match. Unexpected status or text is Needs review/Outcome unknown with precise evidence, not green success. A matching read alone cannot establish completion of an uncertain request.
 7. Store the new baseline and refresh affected bindings only from the verified exact text. These internal result updates do not change or invalidate the remaining items in the operation’s immutable manifest. A user edit cannot mutate that manifest. Finish with per-post totals.
@@ -68,7 +68,7 @@ Keep the item in Outcome unknown and block further writes to that post until suf
 
 The unresolved-write guard belongs to the provider account, organization and post, independently of the campaign or session. Check it before every dispatch. Cancellation, logout, reconnect and campaign deletion/recreation must not clear it. Retain only the identifiers and operation state needed for that guard, without tokens or draft copy; define and disclose its retention before release.
 
-App-local operation keys prevent repeated local submission. They are not provider-supported idempotency keys. A crashed process resumes at reconciliation, not at “send again.”
+App-local operation keys prevent repeated local submission. They are not provider-supported idempotency keys. A crashed process resumes at reconciliation, not at “send again.” This includes a crash after the durable dispatch claim when the app cannot establish whether the request was sent.
 
 ## Residual concurrency risk
 
@@ -78,4 +78,4 @@ If product requirements demand guaranteed non-overwrite, the write feature must 
 
 ## Session and lifecycle
 
-On logout, invalidate the local session and delete its tokens. Local campaign deletion is separate from deleting Buffer content. Disconnect should explain how to revoke the app in Buffer; implement programmatic revocation only if a documented supported route is verified. No background polling or refresh job. The service should offer a sample mode during a provider outage while clearly marking live actions unavailable.
+On logout, stop unstarted items, invalidate the local session and delete its tokens. Keep the outcome of any already claimed request visible without promising remote cancellation; preserve its unresolved-write guard. Local campaign deletion is separate from deleting Buffer content. Disconnect should explain how to revoke the app in Buffer; implement programmatic revocation only if a documented supported route is verified. No background polling or refresh job. The service should offer a sample mode during a provider outage while clearly marking live actions unavailable.
