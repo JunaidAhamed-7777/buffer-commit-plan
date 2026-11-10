@@ -14,8 +14,8 @@ Open [localhost:3000](http://localhost:3000). The sample works without Buffer se
 ## Configure an approved Buffer client
 
 1. Confirm the account, requested scopes and authorized test drafts. [API feasibility and capability gates](../engineering/buffer-api.md)
-2. Copy [`.env.example`](../../.env.example) to `.env.local`. Set `BUFFER_CLIENT_ID`, `BUFFER_CLIENT_SECRET` and the exact registered `BUFFER_REDIRECT_URI`. The local example uses `http://localhost:3000/api/buffer/callback`. Open Patchwork at that same origin.
-3. Generate the 32-byte `PATCHWORK_TOKEN_KEY` using the command in `.env.example`. Keep credentials and the key in `.env.local` or a host secret store. Restart the app after editing the settings.
+2. Register `https://localhost:3000/api/buffer/callback` on the Buffer client. Buffer requires HTTPS for localhost too. Open the HTTPS workspace at that same origin. [Buffer registration guide](https://developers.buffer.com/guides/building-apps.html#registering-an-app-client)
+3. Supply `BUFFER_CLIENT_ID`, `BUFFER_CLIENT_SECRET`, `BUFFER_REDIRECT_URI` and a 32-byte `PATCHWORK_TOKEN_KEY` in the server process environment. See [`.env.example`](../../.env.example) for the variable names and key generation command.
 4. For a hosted live connection, register the HTTPS callback and set `PATCHWORK_DB_PATH` to an absolute path on a persistent volume. A reverse proxy should preserve the public `Host`, set the trusted `X-Forwarded-Proto` and omit callback query strings from access logs.
 
 The first live check needs an approved read, one exact edit and a read-back using a low-stakes draft. Live OAuth, channel support and hosted operation are pending verification.

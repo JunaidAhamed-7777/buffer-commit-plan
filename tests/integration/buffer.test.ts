@@ -125,13 +125,14 @@ test('a confirmed rate limit rejection carries a wait for a fresh review', async
 
 const oauthEnv = {
   BUFFER_CLIENT_ID: 'test-client', BUFFER_CLIENT_SECRET: 'synthetic-secret',
-  BUFFER_REDIRECT_URI: 'http://localhost:3000/api/auth/callback',
+  BUFFER_REDIRECT_URI: 'https://localhost:3000/api/buffer/callback',
 };
 
 test('Buffer authorization requests only the three required scopes and uses S256', () => {
   const config = getOAuthConfig(oauthEnv);
   assert.ok(config);
   assert.equal(getOAuthConfig({ ...oauthEnv, BUFFER_REDIRECT_URI: 'http://example.test/callback' }), null);
+  assert.equal(getOAuthConfig({ ...oauthEnv, BUFFER_REDIRECT_URI: 'http://localhost:3000/api/buffer/callback' }), null);
   const attempt = beginOAuth(config);
   const url = new URL(attempt.url);
   assert.equal(url.origin + url.pathname, 'https://auth.buffer.com/auth');

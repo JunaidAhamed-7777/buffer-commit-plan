@@ -20,9 +20,8 @@ export function getOAuthConfig(env: Readonly<Record<string, string | undefined>>
 
   try {
     const url = new URL(redirectUri);
-    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
     if (url.username || url.password || url.search || url.hash) return null;
-    if (url.protocol !== 'https:' && !(loopback && url.protocol === 'http:')) return null;
+    if (url.protocol !== 'https:') return null;
   } catch {
     return null;
   }
