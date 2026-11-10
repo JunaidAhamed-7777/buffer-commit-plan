@@ -8,6 +8,8 @@ import type { WorkspaceStore } from '../storage/store.ts';
 const LEASE_MS = 60_000;
 const UNKNOWN = 'We could not confirm whether Buffer saved this change. Further edits are blocked.';
 const CHANGED = 'This draft changed or is no longer eligible. Refresh it before reviewing again.';
+const GUARDED = 'An earlier change to this draft is unresolved.';
+const OVERLAPPED = 'Patchwork tried another edit while checking this draft. Refresh it before reviewing again.';
 
 function update(item: OperationItem, status: OperationStatus, message?: string) {
   item.status = status;
@@ -91,8 +93,14 @@ export async function runBatch(
     const preflight = change((data, batch) => {
       const item = batch.manifest[index];
       if (!item || !maySend(batch)) { stopBatch(batch); return; }
+      const leaseUntil = Date.now() + LEASE_MS;
+      if (batch.organizationId && !store.startWriteCheck(batch.organizationId, item.draftId, batch.id, leaseUntil)) {
+        update(batch.items[index], 'needs-review', GUARDED);
+        stopBatch(batch);
+        return;
+      }
       update(batch.items[index], 'checking');
-      batch.leaseUntil = Date.now() + LEASE_MS;
+      batch.leaseUntil = leaseUntil;
       return { item, organizationId: batch.organizationId, sample: data.drafts.find(draft => draft.id === item.draftId) ?? null };
     });
     if (!preflight) return;
@@ -107,8 +115,8 @@ export async function runBatch(
 
     const claimed = change((data, batch) => {
       if (!maySend(batch) || batch.items[index].status !== 'checking') { stopBatch(batch); return false; }
-      if (organizationId && !store.claimGuard(organizationId, item.draftId, batch.id)) {
-        update(batch.items[index], 'needs-review', 'An earlier change to this draft is unresolved.');
+      if (organizationId && !store.claimGuard(organizationId, item.draftId, batch.id, Date.now())) {
+        update(batch.items[index], 'needs-review', store.getGuard(organizationId, item.draftId) ? GUARDED : OVERLAPPED);
         stopBatch(batch);
         return false;
       }
@@ -163,17 +171,19 @@ export async function runBatch(
 export async function reconcileWrite(
   store: WorkspaceStore<WorkspaceData>, key: string, sessionId: string, organizationId: string, draftId: string, provider: DraftProvider,
 ) {
-  const initial = store.getWorkspace(key)?.pending.find(write => write.organizationId === organizationId
+  const initial = store.getWorkspace(key);
+  const original = initial?.pending.find(write => write.organizationId === organizationId
     && write.planned.draftId === draftId && write.receipt.status === 'unknown');
-  if (!initial) return;
+  if (!initial || !original) return;
   let observed: DraftSnapshot | null;
   try { observed = await provider.draft(organizationId, draftId); }
   catch { return; }
   store.transaction(() => {
     const session = store.getSession(sessionId, Date.now());
     const data = store.getWorkspace(key);
-    if (!session || session.workspaceKey !== key || !data || data.organizationId !== organizationId || data.batch?.leaseUntil) return;
-    const pending = data.pending.find(write => write.operationId === initial.operationId && write.planned.draftId === draftId);
+    if (session?.workspaceKey !== key || !session.organizations?.some(org => org.id === organizationId)
+      || data?.revision !== initial.revision || data.organizationId !== organizationId || data.batch?.leaseUntil) return;
+    const pending = data.pending.find(write => write.operationId === original.operationId && write.planned.draftId === draftId);
     if (!pending) return;
     const { planned, receipt } = pending;
     const intended = match(observed, planned, planned.after);
@@ -188,6 +198,7 @@ export async function reconcileWrite(
       store.clearGuard(organizationId, draftId, pending.operationId);
       data.pending = data.pending.filter(write => write !== pending);
       if (intended && observed) {
+        data.available = data.available?.map(draft => draft.id === draftId ? observed : draft);
         const current = data.drafts.find(draft => draft.id === draftId);
         if (current && current.text !== observed.text) {
           data.drafts = data.drafts.map(draft => draft.id === draftId ? observed : draft);

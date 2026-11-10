@@ -15,7 +15,8 @@ test("a post guard survives restart and expiry of its workspace and session", ()
     try {
       first.putWorkspace("workspace", { text: "Studio 4" }, 100);
       first.putSession("cookie", { workspaceKey: "workspace", expiresAt: 100 });
-      assert.equal(first.claimGuard("org", "post", "first"), true);
+      assert.equal(first.startWriteCheck("org", "post", "first", 100), true);
+      assert.equal(first.claimGuard("org", "post", "first", 99), true);
     } finally {
       first.close();
     }
@@ -27,11 +28,13 @@ test("a post guard survives restart and expiry of its workspace and session", ()
       assert.equal(reopened.getWorkspace("workspace"), undefined);
       assert.equal(reopened.getSession("cookie", 0), undefined);
       assert.equal(reopened.getGuard("org", "post"), "first");
-      assert.equal(reopened.claimGuard("org", "post", "second"), false);
+      assert.equal(reopened.startWriteCheck("org", "post", "second", 200), false);
+      assert.equal(reopened.claimGuard("org", "post", "second", 100), false);
       reopened.clearGuard("org", "post", "second");
       assert.equal(reopened.getGuard("org", "post"), "first");
       reopened.clearGuard("org", "post", "first");
-      assert.equal(reopened.claimGuard("org", "post", "second"), true);
+      assert.equal(reopened.startWriteCheck("org", "post", "second", 200), true);
+      assert.equal(reopened.claimGuard("org", "post", "second", 100), true);
     } finally {
       reopened.close();
     }
@@ -39,6 +42,35 @@ test("a post guard survives restart and expiry of its workspace and session", ()
     rmSync(filename, { force: true });
     rmdirSync(directory);
   }
+});
+
+test("a dispatch invalidates only overlapping preflights for the same post and organization", (context) => {
+  const directory = mkdtempSync(join(tmpdir(), "patchwork-store-"));
+  const filename = join(directory, "test.sqlite");
+  const first = new WorkspaceStore<State>(filename);
+  const second = new WorkspaceStore<State>(filename);
+  context.after(() => {
+    second.close();
+    first.close();
+    rmSync(filename, { force: true });
+    rmdirSync(directory);
+  });
+
+  assert.equal(first.startWriteCheck("org", "post", "first", 100), true);
+  assert.equal(second.startWriteCheck("org", "post", "second", 100), true);
+  assert.equal(second.startWriteCheck("org", "other-post", "second", 100), true);
+  assert.equal(second.startWriteCheck("other-org", "post", "second", 100), true);
+  assert.equal(first.claimGuard("org", "post", "first", 99), true);
+  first.clearGuard("org", "post", "first");
+
+  assert.equal(second.claimGuard("org", "post", "second", 99), false);
+  assert.equal(second.claimGuard("org", "other-post", "second", 99), true);
+  assert.equal(second.claimGuard("other-org", "post", "second", 99), true);
+  assert.equal(second.startWriteCheck("org", "post", "second", 100), true);
+  assert.equal(second.claimGuard("org", "post", "second", 100), false);
+  second.prune(100);
+  assert.equal(second.startWriteCheck("org", "post", "second", 200), true);
+  assert.equal(second.claimGuard("org", "post", "second", 100), true);
 });
 
 test("an OAuth attempt belongs to its session and matching state is consumed once", (context) => {
@@ -67,11 +99,13 @@ test("a rolled-back transaction saves neither workspace state nor dispatch guard
   const store = new WorkspaceStore<State>(":memory:");
   context.after(() => store.close());
   store.putWorkspace("workspace", { text: "Studio 4" }, 100);
+  assert.equal(store.startWriteCheck("org", "post", "operation", 100), true);
   assert.throws(() => store.transaction(() => {
     store.putWorkspace("workspace", { text: "Studio 9" }, 100);
-    assert.equal(store.claimGuard("org", "post", "operation"), true);
+    assert.equal(store.claimGuard("org", "post", "operation", 99), true);
     throw new Error("stop before commit");
   }), /stop before commit/);
   assert.deepEqual(store.getWorkspace("workspace"), { text: "Studio 4" });
   assert.equal(store.getGuard("org", "post"), undefined);
+  assert.equal(store.claimGuard("org", "post", "operation", 99), true);
 });

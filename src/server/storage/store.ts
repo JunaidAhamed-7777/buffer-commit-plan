@@ -39,6 +39,20 @@ const schema = `
     operation_id TEXT NOT NULL,
     PRIMARY KEY (organization_id, post_id)
   ) STRICT;
+
+  CREATE TABLE IF NOT EXISTS write_checks (
+    organization_id TEXT NOT NULL,
+    post_id TEXT NOT NULL,
+    operation_id TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    PRIMARY KEY (organization_id, post_id, operation_id)
+  ) STRICT;
+
+  CREATE TRIGGER IF NOT EXISTS invalidate_write_checks
+  AFTER INSERT ON write_guards
+  BEGIN
+    DELETE FROM write_checks WHERE organization_id = NEW.organization_id AND post_id = NEW.post_id;
+  END;
 `;
 
 function digest(value: string): string {
@@ -149,11 +163,24 @@ export class WorkspaceStore<State> {
     return row?.operation_id as string | undefined;
   }
 
-  claimGuard(organizationId: string, postId: string, operationId: string): boolean {
+  startWriteCheck(organizationId: string, postId: string, operationId: string, expiresAt: number): boolean {
     const { changes } = this.db.prepare(`
-      INSERT INTO write_guards (organization_id, post_id, operation_id) VALUES (?, ?, ?)
+      INSERT INTO write_checks (organization_id, post_id, operation_id, expires_at)
+      SELECT ?, ?, ?, ? WHERE NOT EXISTS (
+        SELECT 1 FROM write_guards WHERE organization_id = ? AND post_id = ?
+      )
+    `).run(organizationId, postId, operationId, expiresAt, organizationId, postId);
+    return changes === 1;
+  }
+
+  claimGuard(organizationId: string, postId: string, operationId: string, now: number): boolean {
+    // Dispatch invalidates every overlapping read of this post, even if the guard clears before that read returns.
+    const { changes } = this.db.prepare(`
+      INSERT INTO write_guards (organization_id, post_id, operation_id)
+      SELECT organization_id, post_id, operation_id FROM write_checks
+      WHERE organization_id = ? AND post_id = ? AND operation_id = ? AND expires_at > ?
       ON CONFLICT (organization_id, post_id) DO NOTHING
-    `).run(organizationId, postId, operationId);
+    `).run(organizationId, postId, operationId, now);
     return changes === 1;
   }
 
@@ -167,6 +194,7 @@ export class WorkspaceStore<State> {
     this.db.prepare("DELETE FROM oauth_attempts WHERE expires_at <= ?").run(now);
     this.db.prepare("DELETE FROM sessions WHERE expires_at <= ?").run(now);
     this.db.prepare("DELETE FROM workspaces WHERE expires_at <= ?").run(now);
+    this.db.prepare("DELETE FROM write_checks WHERE expires_at <= ?").run(now);
   }
 
   close(): void {

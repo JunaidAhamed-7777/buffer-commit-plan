@@ -181,6 +181,44 @@ test('a duplicate apply during preflight returns the same operation without send
   assert.equal(reading, 2);
 });
 
+test('a delayed preflight cannot overwrite an edit from another account', async context => {
+  const { service, store, provider, drafts, edits } = workspace(context);
+  const firstSession = await connectDrafts(service, [firstId]);
+  const secondSession = await connectDrafts(service, [firstId], service.createSample(), 'second-account');
+  const firstReview = await preview(service, firstSession);
+  const secondReview = await preview(service, secondSession, 'venue', 'Studio 9');
+  const entered = Promise.withResolvers<void>();
+  const resume = Promise.withResolvers<void>();
+  const read = provider.draft;
+  let delayed = false;
+  provider.draft = async (...args) => {
+    const snapshot = await read(...args);
+    if (!delayed) {
+      delayed = true;
+      entered.resolve();
+      await resume.promise;
+    }
+    return snapshot;
+  };
+
+  const running = service.act(secondSession, { action: 'apply', reviewId: secondReview.id, ids: [firstId] });
+  try {
+    await Promise.race([entered.promise, running]);
+    const first = await service.act(firstSession, { action: 'apply', reviewId: firstReview.id, ids: [firstId] });
+    assert.equal(first.operation?.items[0].status, 'verified');
+    assert.equal(store.getGuard(organization.id, firstId), undefined);
+  } finally {
+    resume.resolve();
+    await running;
+  }
+
+  const second = await running;
+  assert.equal(second.operation?.items[0].status, 'needs-review');
+  assert.match(second.operation?.items[0].message ?? '', /Patchwork tried another edit/i);
+  assert.equal(drafts.get(firstId)?.text, firstReview.items[0].after);
+  assert.deepEqual(edits, [{ id: firstId, text: firstReview.items[0].after }]);
+});
+
 test('cancellation during preflight prevents the dispatch claim', async context => {
   const { service, store, provider, edits } = workspace(context);
   const session = await connectDrafts(service, [firstId, secondId]);
@@ -232,8 +270,92 @@ test('a confirmed edit can be verified later if its first read-back fails', asyn
   const reconciled = await service.act(session, { action: 'reconcile', draftId: firstId });
   assert.equal(reconciled.operation?.items[0].status, 'verified');
   assert.equal(reconciled.drafts[0].text, review.items[0].after);
+  assert.equal(reconciled.available?.find(draft => draft.id === firstId)?.text, review.items[0].after);
   assert.equal(store.getGuard(organization.id, firstId), undefined);
   assert.deepEqual(edits, [{ id: firstId, text: review.items[0].after }]);
+});
+
+test('a delayed reconciliation cannot replace a newer refreshed baseline', async context => {
+  const { service, store, provider, drafts, edits } = workspace(context);
+  const session = await connectDrafts(service, [firstId]);
+  const review = await preview(service, session);
+  const entered = Promise.withResolvers<void>();
+  const resume = Promise.withResolvers<void>();
+  const read = provider.draft;
+  let readBacks = 0;
+  provider.draft = async (...args) => {
+    const snapshot = await read(...args);
+    if (edits.length) {
+      if (++readBacks === 1) throw new Error('Simulated read failure');
+      if (readBacks === 2) {
+        entered.resolve();
+        await resume.promise;
+      }
+    }
+    return snapshot;
+  };
+
+  const pending = await service.act(session, { action: 'apply', reviewId: review.id, ids: [firstId] });
+  assert.equal(pending.operation?.items[0].status, 'unknown');
+  const running = service.act(session, { action: 'reconcile', draftId: firstId });
+  const latest = 'Meet us at Studio 8 instead.';
+  try {
+    await Promise.race([entered.promise, running]);
+    drafts.set(firstId, { ...drafts.get(firstId)!, text: latest });
+    const refreshed = await service.act(session, { action: 'refresh', draftId: firstId });
+    assert.equal(refreshed.drafts[0].text, latest);
+  } finally {
+    resume.resolve();
+    await running;
+  }
+
+  const stale = await running;
+  assert.equal(stale.drafts[0].text, latest);
+  assert.equal(stale.operation?.items[0].status, 'unknown');
+  assert.equal(store.getGuard(organization.id, firstId), pending.operation?.id);
+  const fresh = await service.act(session, { action: 'reconcile', draftId: firstId });
+  assert.equal(fresh.operation?.items[0].status, 'needs-review');
+  assert.equal(fresh.drafts[0].text, latest);
+  assert.equal(store.getGuard(organization.id, firstId), undefined);
+  assert.deepEqual(edits, [{ id: firstId, text: review.items[0].after }]);
+});
+
+test('lost organization access does not strand a reconnect after a batch lease expires', async context => {
+  const { service, store, provider } = workspace(context);
+  const session = await connectDrafts(service, [firstId, secondId]);
+  const review = await preview(service, session);
+  const entered = Promise.withResolvers<void>();
+  const resume = Promise.withResolvers<void>();
+  let sends = 0;
+  provider.edit = async () => {
+    sends += 1;
+    entered.resolve();
+    await resume.promise;
+    return { kind: 'unknown', reason: 'Simulated lost response' };
+  };
+
+  const running = service.act(session, { action: 'apply', reviewId: review.id, ids: [firstId, secondId] });
+  try {
+    await Promise.race([entered.promise, running]);
+    const { workspaceKey } = store.getSession(session, Date.now())!;
+    const data = store.getWorkspace(workspaceKey)!;
+    const operation = data.batch!;
+    operation.leaseUntil = Date.now() - 1;
+    store.putWorkspace(workspaceKey, data, Date.now() + 60_000);
+
+    const reconnected = service.connect(service.createSample(), 'fake-sealed-token', Date.now() + 60_000, {
+      id: 'first-account', organizations: [],
+    });
+    const view = service.view(reconnected);
+    assert.deepEqual(view.drafts, []);
+    assert.equal(view.operation, undefined);
+    assert.equal(store.getGuard(organization.id, firstId), operation.id);
+    assert.equal(store.getGuard(organization.id, secondId), undefined);
+  } finally {
+    resume.resolve();
+    await running;
+  }
+  assert.equal(sends, 1);
 });
 
 test('a changed listing invalidates both the review and stale phrase selections', async context => {

@@ -87,11 +87,12 @@ export class WorkspaceService {
       const nextId = randomBytes(32).toString('base64url');
       const workspaceKey = `buffer:${digest(account.id)}`;
       const previous = this.store.getWorkspace(workspaceKey);
+      const expired = previous && expireBatch(previous);
       if (!previous) save(this.store, workspaceKey, newWorkspace('buffer'));
       else if (previous.organizationId && !account.organizations.some(org => org.id === previous.organizationId)) {
         if (previous.batch?.leaseUntil) throw new WorkspaceError('Wait for the current changes to finish, then reconnect.', 409);
         save(this.store, workspaceKey, newWorkspace('buffer'));
-      } else if (previous.review) {
+      } else if (expired || previous.review) {
         delete previous.review;
         save(this.store, workspaceKey, previous);
       }
@@ -147,7 +148,7 @@ export class WorkspaceService {
   async act(id: string, input: Record<string, unknown>): Promise<Workspace> {
     const { session, data } = this.store.transaction(() => this.current(id));
     const action = input.action;
-    if (action === 'apply' && data.batch?.reviewId === input.reviewId) return this.view(id);
+    if (action === 'apply' && data.batch && data.batch.reviewId === input.reviewId) return this.view(id);
     if (data.batch?.leaseUntil && action !== 'cancel') throw new WorkspaceError('Wait for the current changes to finish.', 409);
     const key = session.workspaceKey;
     const mutate = (change: (fresh: WorkspaceData) => void) => {
@@ -245,10 +246,9 @@ export class WorkspaceService {
         if (!fact) throw new WorkspaceError('Choose a fact to change.');
         const replacement = textField(input, 'replacement', 2000);
         let items;
-        try { items = planPatch(data.drafts, data.bindings, fact.id, replacement); }
+        try { items = planPatch(data.drafts, data.bindings, fact.id, replacement, 10_000); }
         catch (error) { throw new WorkspaceError((error as Error).message); }
         if (!items.length) throw new WorkspaceError('No linked phrases would change.');
-        if (items.some(item => item.after.length > 10_000)) throw new WorkspaceError('The replacement makes a draft too long.');
         mutate(fresh => {
           fresh.review = { id: randomUUID(), factId: fact.id, replacement, items, actor: digest(id), expiresAt: Date.now() + REVIEW_LIFETIME };
         });
