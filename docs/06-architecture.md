@@ -45,21 +45,23 @@ Full baseline text is needed to generate precise replacements. A hash is a chang
 
 ## Apply protocol
 
+At batch start, validate the review once under an app-local operation lock. Consume its approval into one durable operation with an immutable approved manifest. Duplicate submissions return that operation; they do not dispatch a second batch. Freeze campaign edits while it is active, or make cancellation stop unstarted items. Account/session changes stop the operation.
+
 For each selected post, sequentially:
 
-1. Load a still-valid review under an app-local operation lock. Reject duplicate/replayed approval and cross-account IDs.
-2. Read the post again from Buffer. Compare exact supported text and status/permission observations with the review baseline. Recheck local revision.
+1. Load the active operation and its immutable item, not a fresh reusable approval. Check owner, organization, item state and cancellation.
+2. Read the post again from Buffer. Re-run the complete supported-content classifier, including media, thread, annotation, link-metadata, status and permission exclusions. Compare exact text and relevant state with the approved baseline. Newly unsupported content is a conflict even when top-level text is unchanged.
 3. If anything changed, mark Needs review and stop before this write. Do not merge silently. Already completed posts remain completed; later posts are Not attempted.
 4. Record Applying durably before the request. Submit the minimal text edit only. Never include stale arrays or scheduling fields just because they were in the snapshot.
 5. A definite API rejection becomes Failed. A timeout/disconnect after dispatch becomes Outcome unknown, not Failed.
 6. After apparent success, read current state. Mark Verified only when intended text and supported draft state match. Unexpected status or text is Needs review/Outcome unknown with precise evidence, not green success.
-7. Store the new baseline and refresh affected bindings only from the verified exact text. Finish with per-post totals.
+7. Store the new baseline and refresh affected bindings only from the verified exact text. These internal result updates do not change or invalidate the remaining items in the operation’s immutable manifest. A user edit cannot mutate that manifest. Finish with per-post totals.
 
 Fail-stop is the default: an unexpected result halts remaining writes. A later batch can resume only with a fresh review of unresolved posts. There is no automatic rollback of successful edits.
 
 ## Reconciliation after uncertainty
 
-Read the current post before deciding anything. If it exactly matches the intended result and remains a supported draft, record “Matches intended text, verified at [time]”; do not claim which actor made the change. If it matches the old text, an earlier request might still be pending. Do not auto-retry. Resolve after a fresh read and explicit newly reviewed action, or leave it uncertain if the service cannot provide enough evidence. A third text is a conflict needing operator review.
+Read the current post before deciding anything. If it exactly matches the intended result and remains a supported draft, record “Matches intended text, verified at [time]”; do not claim which actor made the change. If it matches the old text, an earlier request might still be pending. Keep the post blocked: a fresh approval is not evidence that the earlier request finished. Permit another mutation only when sufficient provider evidence establishes the earlier operation is no longer in flight; otherwise retain the uncertain state and offer read-only reconciliation/manual inspection. Do not invent a safe timeout or assume that another read resolves this. A third text is a conflict needing operator review.
 
 App-local operation keys prevent repeated local submission. They are not provider-supported idempotency keys. A crashed process resumes at reconciliation, not at “send again.”
 
