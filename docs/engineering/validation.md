@@ -41,6 +41,7 @@ A planning-time alternative is one honest self-test on seeded fixtures, explicit
 | Unknown request followed by old-text read | Remains blocked without provider evidence; fresh approval alone cannot authorize a supposedly safe retry |
 | Unknown request followed by intended-text or third-text read | Record the observed text; request remains Outcome unknown and write-blocked without completion evidence |
 | Unknown request followed by logout/reconnect or campaign deletion/recreation | Same provider post remains write-blocked; removing campaign copy or session secrets does not erase the unresolved-write guard |
+| Switch to another authorized Buffer account for the same organization/post after an unknown write | Post remains blocked; account identity is not part of the blocking key |
 | Read-back has third-party changed text | No green success; fresh review required |
 | Cancellation or logout during a paused preflight read | If the stop wins before the durable dispatch claim, item is Not attempted and no request is sent |
 | Cancellation after the durable dispatch claim | Stops only unstarted items; claimed item keeps its own outcome without a remote-cancellation claim |

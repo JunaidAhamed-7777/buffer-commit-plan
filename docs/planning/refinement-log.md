@@ -96,3 +96,9 @@ Decision: recheck session and cancellation when durably claiming the item for di
 11 November 2026. Re-read Buffer's post schema, error and rate-limit documentation. Edit eligibility uses `updatePost`, while the mutation is `editPost`. Service metadata carries exclusion signals beyond assets. The error guide describes HTTP 200 errors and warnings; the rate-limit guide separately documents rejected HTTP 429 responses.
 
 Decision: record the exact field checks, classify the full response, and preserve uncertainty when an error does not establish a no-write rejection. Keep private copy out of diagnostic examples and automatic replay out of the apply path. Added sources and acceptance cases; actual OAuth behavior and lost-response completion evidence remain unverified.
+
+## Pass 13 · Make the guard follow the post across account changes
+
+11 November 2026. Final review found that including the provider account in the guard key could let the same operator bypass it through another authorized account for the same organization/post.
+
+Decision: key the block by provider, organization and post within the app's ownership boundary. Retain the originating account only as provenance and check current authorization separately. Added the account-switch acceptance case. The implementation and account behavior remain untested.
