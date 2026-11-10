@@ -109,20 +109,26 @@ function PhrasePicker({ draft, fact, bindings, busy, onBind, onUnbind, onClose }
     event.preventDefault();
     if (selected === null || busy) return;
     const end = selected + query.length;
-    if (mayUnlink && await onUnbind(selected, end)) onClose();
-    else if (mayLink && await onBind(selected, end)) onClose();
+    const changed = mayUnlink ? await onUnbind(selected, end) : mayLink && await onBind(selected, end);
+    if (changed) onClose();
+    else setSelected(null);
   }
 
   return (
-    <form className="phrase-picker" noValidate onSubmit={submit}>
+    <form className="phrase-picker" noValidate onSubmit={submit} onKeyDown={(event) => {
+      if (event.key === 'Escape' && !event.nativeEvent.isComposing && !busy) {
+        event.preventDefault();
+        onClose();
+      }
+    }}>
       <div className="phrase-heading"><h3>Link a phrase to {fact.label.toLowerCase()}</h3>
-        <button type="button" className="icon-button" onClick={onClose} aria-label="Close phrase picker" title="Close phrase picker"><X size={17} /></button>
+        <button type="button" className="icon-button" disabled={busy} onClick={onClose} aria-label="Close phrase picker" title="Close phrase picker"><X size={17} /></button>
       </div>
       <label htmlFor={queryId}>Find exact words</label>
       <div className="clearable-field">
-        <textarea ref={input} id={queryId} className="resize-none" rows={2} autoFocus value={query} aria-describedby={matchId} autoComplete="off"
+        <textarea ref={input} id={queryId} className="resize-none" rows={2} autoFocus readOnly={busy} value={query} aria-describedby={matchId} autoComplete="off"
           onChange={(event) => { setQuery(event.target.value); setSelected(null); }} />
-        {query && <button type="button" className="icon-button" aria-label="Clear phrase search" title="Clear phrase search"
+        {query && <button type="button" className="icon-button" disabled={busy} aria-label="Clear phrase search" title="Clear phrase search"
           onClick={() => { setQuery(''); setSelected(null); input.current?.focus(); }}><X size={16} /></button>}
       </div>
       <p id={matchId} className="field-help" role="status">
@@ -130,7 +136,7 @@ function PhrasePicker({ draft, fact, bindings, busy, onBind, onUnbind, onClose }
           : matches.length > 30 ? `${matches.length} matches. Showing the first 30. Add more words to narrow the list.`
             : `${matches.length} ${matches.length === 1 ? 'match' : 'matches'}. Choose the exact occurrence.`}
       </p>
-      {matches.length > 0 && <fieldset className="occurrences">
+      {matches.length > 0 && <fieldset className="occurrences" disabled={busy}>
         <legend className="sr-only">Exact occurrences</legend>
         {matches.slice(0, 30).map(({ start, end }, index) => {
           const before = draft.text.slice(Math.max(0, start - 22), start);
@@ -197,7 +203,7 @@ export function Drafts({ workspace, fact, busy, onChoose, onBind, onUnbind, onRe
                   </button>}
                 </div>
                 {fact && openDraft === draft.id && (
-                  <PhrasePicker key={fact.id} draft={draft} fact={fact} bindings={bindings} busy={busy}
+                  <PhrasePicker key={draft.version} draft={draft} fact={fact} bindings={bindings} busy={busy}
                     onBind={(start, end) => onBind(draft.id, fact.id, start, end)}
                     onUnbind={(start, end) => onUnbind(draft.id, start, end)} onClose={() => {
                       const trigger = phraseTrigger.current;

@@ -42,7 +42,7 @@ button, input, select, textarea { color: inherit; font: inherit; }
 button, input, select { margin: 0; }
 button:not(:disabled), summary, a { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
   outline: 2px solid var(--blue); outline-offset: 3px;
 }
 button, a { -webkit-tap-highlight-color: transparent; }
@@ -175,7 +175,8 @@ code { font-family: var(--mono); font-size: .9em; }
 .clearable-field > button { position: absolute; top: 3px; right: 4px; }
 .occurrences { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 6px; max-height: 245px; overflow: auto; }
 .occurrence { display: flex; align-items: center; gap: 9px; padding: 8px 9px; border: 1px solid var(--rule); border-radius: var(--small-radius); font-weight: 400; overflow-wrap: anywhere; cursor: pointer; }
-.occurrence:hover, .occurrence:has(input:checked) { background: var(--blue-wash); }
+.occurrence:hover:not(:has(input:disabled)), .occurrence:has(input:checked) { background: var(--blue-wash); }
+.occurrence:has(input:disabled) { cursor: not-allowed; }
 .occurrence mark { background: var(--blue-wash); color: var(--blue-dark); font-weight: 620; }
 
 .review-rail-body { gap: 14px; }

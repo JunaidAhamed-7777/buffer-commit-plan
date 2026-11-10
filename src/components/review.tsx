@@ -154,7 +154,7 @@ export function Receipts({ operation, unresolved, sample, busy, waiting, cancell
   onRefresh: (id: string) => void;
   onReconcile: (id: string) => void;
 }) {
-  const earlier = unresolved?.filter((item) => !operation?.items.some((current) => current.draftId === item.draftId)) ?? [];
+  const earlier = unresolved ?? [];
   if (!operation && !earlier.length) return waiting ? <div className="workbench-loading" role="status"><Spinner /> Starting the reviewed batch…</div> : (
     <EmptyState title="No receipts yet" action={<button type="button" className="button secondary" onClick={onBack}>
       <ArrowLeft size={15} aria-hidden="true" /> Back to campaign

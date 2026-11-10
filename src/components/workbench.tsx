@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, BookOpen, CircleAlert, FileCheck2, Layers, Link2, RotateCcw, Scissors } from 'lucide-react';
 import type { Workspace } from '../domain/workspace';
@@ -22,13 +22,17 @@ const views = [
   { id: 'receipts', label: 'Receipts', heading: 'Receipts', Icon: FileCheck2 },
 ] as const;
 
-class WorkspaceError extends Error {}
+class WorkspaceError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
 
 async function requestWorkspace(init?: RequestInit): Promise<Workspace> {
   const response = await fetch('/api/workspace', { cache: 'no-store', ...init });
   const value = await response.json().catch(() => undefined);
   if (!response.ok || !value || (value.mode !== 'sample' && value.mode !== 'buffer')) {
-    throw new WorkspaceError(typeof value?.error === 'string' ? value.error : 'Could not load the workspace. Try again.');
+    throw new WorkspaceError(typeof value?.error === 'string' ? value.error : 'Could not load the workspace. Try again.', response.status);
   }
   return value as Workspace;
 }
@@ -78,6 +82,22 @@ export function Workbench() {
   const organization = workspace?.connection?.organizations.find((item) => item.id === workspace.connection?.organizationId);
   const chosenOrg = organizationChoice ?? organization?.id ?? '';
 
+  const resetToSample = useCallback((note: string) => {
+    epoch.current++;
+    setFactId(undefined);
+    setValues({});
+    setDialog(undefined);
+    setOrganizationChoice(undefined);
+    setSelection(undefined);
+    setInvalidatedReview(undefined);
+    setPreviousOperation(undefined);
+    setStopRequested(undefined);
+    setError(undefined);
+    setConnectionNote(note);
+    requestedFocus.current = true;
+    setView('campaign');
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     const url = new URL(window.location.href);
@@ -104,11 +124,14 @@ export function Workbench() {
 
   useEffect(() => {
     document.title = `${views.find((item) => item.id === view)?.heading ?? 'Campaign'} | Patchwork`;
+  }, [view]);
+
+  useEffect(() => {
     if (requestedFocus.current) {
       heading.current?.focus();
       requestedFocus.current = false;
     }
-  }, [view]);
+  });
 
   useEffect(() => {
     if (!applying && !active) return;
@@ -122,8 +145,7 @@ export function Workbench() {
         if (!controller.signal.aborted && epoch.current === version && (!mutation.current || mutation.current === 'apply')) {
           setWorkspace(data);
           if (mode === 'buffer' && data.mode === 'sample') {
-            setValues({});
-            setConnectionNote('Your Buffer session ended. Reconnect to see the draft results.');
+            resetToSample('Your Buffer session ended. Reconnect to check the draft results.');
           } else if (misses >= 3) {
             setConnectionNote((note) => note === 'Live progress is unavailable. Patchwork will check again.' ? undefined : note);
           }
@@ -136,7 +158,7 @@ export function Workbench() {
     }
     void poll();
     return () => { controller.abort(); clearTimeout(timer); };
-  }, [applying, active, mode]);
+  }, [applying, active, mode, resetToSample]);
 
   function navigate(next: View) {
     if (next === view) return;
@@ -147,27 +169,42 @@ export function Workbench() {
   async function mutate(action: string, fields: Record<string, unknown> = {}) {
     if (mutation.current || active) return undefined;
     mutation.current = action;
-    epoch.current++;
+    const version = ++epoch.current;
     setBusy(action);
     setError(undefined);
     try {
       const data = await postWorkspace(action, fields);
+      if (epoch.current !== version) return undefined;
       epoch.current++;
       setWorkspace(data);
       return data;
     } catch (cause) {
-      if (action === 'apply') {
+      if (epoch.current !== version) return undefined;
+      const status = cause instanceof WorkspaceError ? cause.status : undefined;
+      const staleLink = status === 409 && (action === 'bind' || action === 'unbind');
+      const message = errorMessage(cause, action === 'apply'
+        ? 'The connection dropped while applying. Reload the workspace to check the batch result.'
+        : 'Could not reach Patchwork. Try again.');
+      if (action === 'apply' || status === 401 || staleLink) {
         try {
           const latest = await requestWorkspace({ signal: AbortSignal.timeout(8_000) });
+          if (epoch.current !== version) return undefined;
           epoch.current++;
           setWorkspace(latest);
+          if (latest.mode === 'sample' && (mode === 'buffer' || status === 401)) {
+            const note = mode === 'sample' ? 'Your sample session expired. A new sample is ready.'
+              : action === 'apply' ? 'Your Buffer session ended. Reconnect to check the draft results.'
+                : 'Your Buffer session ended. Reconnect to continue.';
+            resetToSample(note);
+            return undefined;
+          }
+          setError(staleLink ? 'The workspace changed. Check the current drafts before linking again.' : message);
+          return undefined;
         } catch {
           // Keep the previous result available until the workspace can be read again.
         }
       }
-      setError(errorMessage(cause, action === 'apply'
-        ? 'The connection dropped while applying. Reload the workspace to check the batch result.'
-        : 'Could not reach Patchwork. Try again.'));
+      if (epoch.current === version) setError(message);
       return undefined;
     } finally {
       mutation.current = undefined;
@@ -321,7 +358,7 @@ export function Workbench() {
                 setValues((previous) => ({ ...previous, [selectedFact.id]: value }));
               }}
               onPreview={() => void makePreview()} />
-            <Drafts key={selectedFact?.id} workspace={workspace} fact={selectedFact} busy={locked} onChoose={() => openDialog({ kind: 'choose' })}
+            <Drafts key={`${mode}-${selectedFact?.id}`} workspace={workspace} fact={selectedFact} busy={locked} onChoose={() => openDialog({ kind: 'choose' })}
               onBind={async (draftId, factId, start, end) => Boolean(await mutate('bind', {
                 draftId, factId, start, end, version: workspace.drafts.find((draft) => draft.id === draftId)?.version,
               }))}
