@@ -28,14 +28,17 @@ A planning-time alternative is one honest self-test on seeded fixtures, explicit
 | Date label changed | No implied correction of unlinked weekday/relative language |
 | New value is longer/shorter | Surrounding copy and subsequent bindings remain correct |
 | Emoji, combining marks, non-Latin text | No broken graphemes or shifted selection; uncertain case blocks |
-| External edit anywhere in text | Old approval invalid; no stale whole-text replacement |
-| Changed status or revoked permission | No write for that post; remaining batch stops |
+| External edit observed by final preflight read | Old approval invalid; no stale whole-text replacement dispatched |
+| Changed status, permissions or unsupported content observed by final preflight read | No write for that post; remaining batch stops |
+| External change between final read and write | Reproduce and document the residual race; no guaranteed non-overwrite claim |
 | Another organization/account ID injected | Server rejects before remote action |
 | Thread/media/annotation detected | Unsupported with reason, not silently flattened |
 | Empty or no-op fact change | No remote mutation |
 | Duplicate click or page refresh | One local operation; no automatic repeated remote write |
 | Two successful posts, third rejected | Partial result remains explicit; no rollback |
+| Successful item updates its baseline | Remaining operation items still use their immutable approved manifest |
 | Lost response after apply | Outcome unknown until reconciliation; no blind retry |
+| Unknown request followed by old-text read | Remains blocked without provider evidence; fresh approval alone cannot authorize a supposedly safe retry |
 | Read-back has third-party changed text | No green success; fresh review required |
 | Local cancellation during request | Stops only unstarted operations, not claimed remote cancellation |
 | Browser closes while applying | Durable operation resumes by read/reconcile |
