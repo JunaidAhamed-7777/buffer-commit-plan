@@ -2,7 +2,9 @@
 
 The sample and live adapter are implemented locally. An authorized live check verified OAuth and one Bluesky draft edit with read-back. The phases below record the original plan and its remaining proof. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
-The deadline is 14 November 2026 at 07:59 UTC / 13:29 IST. Leave time for verification and review of the submission artifacts.
+**Submitted to Buffer Commit on 11 November 2026.** Junaid confirmed that he submitted Patchwork; the organizer receipt confirms submission. Submissions are final. Keep the app publicly available through at least **30 November 2026**. Judging starts **16 November** and winners are announced **7 December**; exact times/timezones were not specified. No award is confirmed. The exact submitted form fields and entry URL/ID have not been independently checked.
+
+The original deadline was 14 November 2026 at 07:59 UTC / 13:29 IST. The phases and suggested evidence freeze below are historical planning and remaining technical evidence, not pending submission work or authorization to change the final entry.
 
 ## Phase 0 · Design and repository preparation
 
