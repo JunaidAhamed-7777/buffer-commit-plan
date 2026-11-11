@@ -5,10 +5,10 @@ import { BufferAdapter } from '../buffer/adapter.ts';
 import type { WorkspaceData } from '../campaigns/model.ts';
 import { WorkspaceService } from '../campaigns/service.ts';
 import { WorkspaceStore } from '../storage/store.ts';
+import { bufferAccess } from './access.ts';
 import { getOAuthConfig } from './oauth.ts';
 
 const sessionIdFormat = /^[A-Za-z0-9_-]{43}$/;
-const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export const privateHeaders = {
   'Cache-Control': 'no-store, private',
@@ -29,8 +29,9 @@ function createRuntime() {
   const key = tokenKey();
   const config = getOAuthConfig();
   const redirect = config ? new URL(config.redirectUri) : undefined;
-  const hostedProduction = process.env.NODE_ENV === 'production' && redirect && !loopbackHosts.has(redirect.hostname);
-  const oauth = config && key && redirect?.pathname === '/api/buffer/callback' && explicitPath !== ':memory:'
+  const access = redirect ? bufferAccess(redirect) : undefined;
+  const hostedProduction = process.env.NODE_ENV === 'production' && redirect && access !== null;
+  const oauth = config && key && redirect?.pathname === '/api/buffer/callback' && explicitPath !== ':memory:' && access !== undefined
     && (!hostedProduction || (redirect.protocol === 'https:' && explicitPath && isAbsolute(explicitPath)))
     ? config : undefined;
 
@@ -61,7 +62,7 @@ function createRuntime() {
     if (!oauth) throw new Error('The Buffer connection is unavailable.');
     return new BufferAdapter(unseal(sealedToken, `buffer:${accountId}`));
   }, Boolean(oauth));
-  return { store, service, oauth, seal, unseal };
+  return { store, service, oauth, access, seal, unseal };
 }
 
 const processRuntime = globalThis as typeof globalThis & { patchworkRuntime?: ReturnType<typeof createRuntime> };

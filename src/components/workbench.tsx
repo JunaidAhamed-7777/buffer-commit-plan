@@ -114,6 +114,7 @@ export function Workbench() {
         if (operationActive(data.operation)) setView('receipts');
         if (outcome === 'denied') setConnectionNote('Buffer access was declined. You can keep working in the sample.');
         if (outcome === 'error') setConnectionNote('Could not connect to Buffer. Try connecting again.');
+        if (outcome === 'restricted') setConnectionNote('This Patchwork instance connects to one Buffer account and organization. You can keep working in the sample.');
         if (outcome === 'connected' && data.mode === 'buffer') setConnectionNote('Buffer connected. Choose an organization to import drafts.');
       })
       .catch((cause: unknown) => {
