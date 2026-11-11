@@ -1,6 +1,6 @@
 # Security and privacy design
 
-These controls are implemented locally. The release checks still require a live Buffer test and verification of the host's storage and logging configuration.
+The local workbench passed an authorized Buffer test on Bluesky. Hosted verification also covers the production callback, database and logging configuration. [Local test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 ## Data minimization
 
@@ -15,6 +15,7 @@ Draft copy is private content even when intended for eventual publication. Avoid
 | OAuth CSRF or code interception | Single-use state bound to a server session, PKCE and an exact callback origin | Verify the registered redirect and real callback |
 | Token leaks | Server-side AES-256-GCM, HTTP-only session cookie, HTTPS for hosted OAuth and sanitized errors | Host secrets, logs and storage permissions still need review |
 | Cross-tenant post edit | Server checks owner, selected organization, channel, post and current permissions | Client IDs alone are never authorization |
+| Uninvited Buffer account | Hosted OAuth matches the account and organization returned by Buffer against server configuration before saving the connection | The fictional sample is public |
 | Malicious draft text | Render as escaped text; treat as data | No content can trigger tools, navigation or commands |
 | Stale review overwrite | Exact baseline comparison, fresh read, invalidate review, verify after edit | No remote CAS; a race window remains |
 | Duplicate dispatch | Durable local operation record, consumed approval, disable repeated UI submit | No documented provider idempotency guarantee |
@@ -37,9 +38,11 @@ The app uses interactive OAuth. It keeps the access token encrypted in the serve
 
 If refresh is added later, request approval for the expanded persistent access and serialize single-use token rotation. Do not ask users to paste credentials into a chat or source file.
 
+Patchwork omits the callback URL from its application logs. Vercel can still include search parameters in its request logs. The callback contains the one-use authorization code and state. The PKCE verifier and access token stay server-side. Keep Vercel project logs private and avoid exporting callback traffic. [Vercel runtime log fields](https://vercel.com/docs/logs/runtime#log-details)
+
 ## Retention
 
-The live workspace stores the campaign and receipts for seven days from its last write. The anonymous sample expires after twelve hours. A workspace request clears expired records. Deleting a campaign clears its local copy while preserving unresolved write guards. Keep the SQLite file, its journal and backups on private storage. Deployment documentation should state the host's backup and logging retention.
+The live workspace stores the campaign and receipts for seven days from its last write. The anonymous sample session expires after twelve hours. Workspace requests trigger cleanup of expired records. Deleting a campaign clears its active copy while preserving unresolved write guards. Keep the local SQLite file, journal and backups on private storage. The hosted Buffer workbench stores its records in Neon PostgreSQL. Database changes remain recoverable within the project's configured restore window, including deleted records. [Neon restore history](https://neon.com/docs/postgres/backup-restore/branch-restore)
 
 An unresolved write guard survives disconnect, campaign deletion and expiry. The guard keeps organization, post and operation identifiers. It has no automatic expiry because a later read cannot prove a pending edit has finished. See the [reconciliation protocol](architecture.md#reconciliation-after-uncertainty).
 

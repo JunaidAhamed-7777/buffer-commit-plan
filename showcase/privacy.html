@@ -30,7 +30,8 @@
     <section aria-labelledby="buffer-data">
       <h2 id="buffer-data">If you connect Buffer</h2>
       <p>The separate Patchwork app requests <code>account:read</code>, <code>posts:read</code> and <code>posts:write</code> through Buffer OAuth. The app reads account, organization, channel and eligible draft details so you can select drafts and review edits. It sends approved draft edits to Buffer when you apply them. <a href="https://buffer.com/legal#privacy-policy">Buffer privacy policy</a></p>
-      <p>The app uses an HTTP-only session cookie and stores the Buffer access token encrypted on the server. A connected session lasts up to one hour. The instance’s SQLite database holds draft copies, linked phrases, reviews and receipts. A campaign expires seven days after its last saved change. The app clears expired records when a workspace is opened.</p>
+      <p>The app uses an HTTP-only session cookie and stores the Buffer access token encrypted on the server. A connected session lasts up to one hour. The database holds draft copies, linked phrases, reviews and receipts. A campaign expires seven days after its last saved change. The app clears expired records as workspaces are opened.</p>
+      <p>The public Buffer workbench uses Vercel for hosting and Neon PostgreSQL for database storage. Vercel logs may include request metadata such as the browser and request URL, including the one-use authorization code returned by Buffer. Deleted records can remain in database restore history until that history expires. Local installations use SQLite. <a href="https://vercel.com/legal/privacy-notice">Vercel privacy notice</a> · <a href="https://neon.com/security">Neon data storage</a></p>
     </section>
 
     <section aria-labelledby="remove-data">

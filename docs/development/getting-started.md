@@ -35,7 +35,16 @@ The showcase is a static project page with a browser-only demo. `npm run build:s
 
 In the Vercel web dashboard, import this GitHub repository into your Hobby account. Keep the root directory at the repository root and choose **Other** as the framework preset. Use Node.js 24.x. Set **Build Command** to `npm run build:showcase` and **Output Directory** to `dist/showcase`. Leave environment variables empty. [Vercel build settings](https://vercel.com/docs/builds/configure-a-build)
 
-These settings publish the showcase. Hosting the connected app on Vercel Functions would require a shared transactional database for OAuth sessions, reviews and write guards because the local SQLite file cannot persist across instances. [Vercel SQLite guidance](https://vercel.com/kb/guide/is-sqlite-supported-in-vercel)
+## Deploy the connected workbench on Vercel
+
+Use a separate Hobby project with the **Next.js** preset, Node.js **24.x**, and Fluid Compute. Attach a Neon **Free** database to **Production** and use its pooled `DATABASE_URL`. The workbench needs one shared transactional database for OAuth sessions, reviews and write guards across Vercel Functions. [Postgres on Vercel](https://vercel.com/docs/postgres)
+
+1. Add the exact `https://<production-domain>/api/buffer/callback` URL to the existing confidential Buffer app client. Keep the localhost callback if you still use the launcher.
+2. Set `BUFFER_CLIENT_ID`, `BUFFER_CLIENT_SECRET`, and `BUFFER_REDIRECT_URI` in the Vercel project’s Production environment. Set `PATCHWORK_TOKEN_KEY` to a random 32-byte base64url key and store it as a Sensitive variable. Keep the same key across production deployments so existing sessions can decrypt their tokens.
+3. Set `PATCHWORK_BUFFER_ACCOUNT_ID` and `PATCHWORK_BUFFER_ORGANIZATION_ID` to the IDs of the approved operator and organization returned by Buffer. The public sample is available to visitors. A real connection requires both IDs and a matching Buffer account and organization.
+4. Deploy and open the production domain in a browser. Verify the sample and privacy page, then complete Buffer consent and check that the workbench can read the authorized test draft. Preview domains do not match the registered callback.
+
+Review the [storage and logging details](../engineering/security-and-privacy.md) before connecting Buffer. Keep production secrets out of Preview and Development and avoid exporting callback query strings to a log drain.
 
 For a self-hosted live connection, register the HTTPS callback and set `PATCHWORK_DB_PATH` to an absolute path on a persistent volume. A reverse proxy should preserve the public `Host`, set the trusted `X-Forwarded-Proto` and omit callback query strings from access logs.
 
