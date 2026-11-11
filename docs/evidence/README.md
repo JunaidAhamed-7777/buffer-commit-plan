@@ -1,6 +1,12 @@
 # Evidence
 
-The repository has local tests, simulated Buffer cases and a public sample demo. Real Buffer authorization, a real draft edit and performance benchmarks still need evidence.
+The repository has local tests, simulated Buffer cases, a public sample demo and a verified live Bluesky edit. A second channel and performance benchmarks remain open.
+
+## Live Buffer verification on 11 November 2026
+
+- Patchwork `24e7594` ran on Windows over localhost HTTPS. After the operator completed Buffer consent, Patchwork showed the connected state and loaded the organization and eligible Bluesky draft through Buffer.
+- The unscheduled test draft read `Patchwork test: meet at Studio 4. The old map still says Studio 4. Bring a notebook.` The full-draft review showed one change, to the first occurrence of `Studio 4`.
+- At 06:21 UTC, Patchwork applied the reviewed edit and reported **Verified** after API read-back. After a separate reload, Buffer showed `Patchwork test: meet at Studio 9. The old map still says Studio 4. Bring a notebook.` under **Unscheduled**. The channel showed one draft, zero queued posts and zero sent posts.
 
 ## Stress verification on 11 November 2026
 

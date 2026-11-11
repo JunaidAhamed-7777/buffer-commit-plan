@@ -1,6 +1,6 @@
 # Evaluation plan
 
-The test suites cover local patching, storage, simulated Buffer responses, operation handling and the sample workflow. The cases below define what to verify. Real OAuth, draft edits, cross-channel support and usability measurements remain open.
+The test suites cover local patching, storage, simulated Buffer responses, operation handling and the sample workflow. One authorized live test verified OAuth and a Bluesky draft edit. Cross-channel support and usability measurements remain open. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 ## Product questions
 

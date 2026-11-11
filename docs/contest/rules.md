@@ -20,7 +20,7 @@ A hosted working app, OAuth authentication with Buffer, successful real API use,
 
 ## Status and authorization
 
-Registration was confirmed on 10 November. The app now runs locally. Real Buffer authorization, draft edits, deployment and submission are pending.
+Registration was confirmed on 10 November. The local app verified real Buffer authorization and a Bluesky draft edit on 11 November. The public showcase is live. Hosting the connected app and submitting the entry remain open. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 The owner authorized implementation and repository pushes. Confirm OAuth access, suitable test drafts and the exact live edit before the integration check. Hosting, spending and final submission require separate authorization. [Current boundaries](../../AGENTS.md)
 

@@ -1,6 +1,6 @@
 # Architecture and write safety
 
-The local implementation follows this design. Real OAuth and edit behavior still need an authorized Buffer check.
+The local implementation follows this design. The first authorized Buffer check verified OAuth and a single Bluesky draft edit. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 ## Bounded implementation shape
 

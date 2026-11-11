@@ -4,7 +4,7 @@
 
 A correction desk for Buffer drafts. Link a venue, date label or registration URL across drafts, then review the exact edits before applying them.
 
-The workbench runs locally with a sample workspace and an optional Buffer connection. The public showcase runs the sample in the browser. A real Buffer sign-in and draft edit are the next [verification steps](docs/development/getting-started.md#test-one-real-draft).
+The workbench runs locally with a sample workspace and an optional Buffer connection. The public showcase runs the sample in the browser. The local workbench completed Buffer OAuth and verified an edit to an unscheduled Bluesky draft. [Live test evidence](docs/evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 ## Project showcase
 
@@ -58,6 +58,6 @@ This project is being prepared for [Buffer Commit](https://buffer.com/api/commit
 
 ## Evidence and limits
 
-Local and simulated tests cover parts of the correction workflow. Setup cost, real OAuth behavior and editing on two Buffer channels still need testing. See the [validation plan](docs/engineering/validation.md) for the evidence required before release.
+Local and simulated tests cover the correction workflow and failure cases. Setup cost and live editing on a second Buffer channel still need testing. [Validation plan](docs/engineering/validation.md)
 
 The working name and software licence are undecided. See the [submission notes](docs/contest/submission-checklist.md) for the AI assistance disclosure.

@@ -1,6 +1,6 @@
 # Submission evidence checklist
 
-**Current status:** Local app built. Real OAuth, a verified Buffer edit, deployment and submission are pending. Registration was previously confirmed.
+The local app verified real OAuth and one Bluesky draft edit. The public showcase is live. Hosting the connected app and submitting the entry remain open. Registration was previously confirmed. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 ## Before a future final-submit decision
 
@@ -8,8 +8,8 @@
 - [ ] Verify personal eligibility and rights to all content/dependencies.
 - [ ] Record only this project's work performed in the permitted window.
 - [ ] Confirm the hosted app works from an ordinary fresh browser.
-- [ ] Confirm real Buffer OAuth, not a personal-key substitute.
-- [ ] Demonstrate successful API editing and read-back with authorized drafts.
+- [x] Confirm real Buffer OAuth in the local workbench.
+- [x] Demonstrate successful API editing and read-back on one authorized Bluesky draft.
 - [ ] Verify the exact scopes, redirect URI and public privacy/contact information.
 - [ ] Review security, failure cases, unsupported-content exclusions and limitations.
 - [ ] Verify ongoing availability during judging; plan through 7 December unless clarified.

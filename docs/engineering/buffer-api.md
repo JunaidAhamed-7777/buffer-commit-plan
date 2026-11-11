@@ -1,6 +1,6 @@
 # API feasibility
 
-Core post schema and error/limit guidance rechecked 11 November 2026; OAuth guidance last checked 10 November. **Documented is not tested.** No authenticated Buffer request has been made for this project. These are requirements for a later authorized spike, not executable examples or implementation.
+Core post schema and error and rate limit guidance were rechecked on 11 November 2026. OAuth guidance was last checked on 10 November. The first live check verified OAuth, an authorized draft read, `editPost` and read-back on Bluesky. The checks below still govern which content and responses Patchwork accepts. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 ## Stable core to validate first
 

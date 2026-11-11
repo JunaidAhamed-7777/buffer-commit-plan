@@ -1,6 +1,6 @@
 # Build roadmap and stop gates
 
-The sample and live adapter are implemented locally. The next release gate is a real, authorized OAuth connection and edit with read-back. The phases below record the original plan and its remaining proof.
+The sample and live adapter are implemented locally. An authorized live check verified OAuth and one Bluesky draft edit with read-back. The phases below record the original plan and its remaining proof. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
 
 The deadline is 14 November 2026 at 07:59 UTC / 13:29 IST. Leave time for verification and review of the submission artifacts.
 
@@ -29,7 +29,7 @@ Exit: fixture suite proves only selected spans change; no-op and stale-baseline 
 
 ## Phase 3 · Wire safe-enough external execution
 
-The server implements account and organization checks, sequential apply, durable state, per-post preflight and read-back, single-use approval and read-only reconciliation. Provider behavior still needs live evidence. [Write protocol](../engineering/architecture.md)
+The server implements account and organization checks, sequential apply, durable state, per-post preflight and read-back, single-use approval and read-only reconciliation. One live edit passed on Bluesky. The live multi-draft and second-channel checks remain open. [Write protocol](../engineering/architecture.md)
 
 Exit: one real three-draft story and the failure matrix pass with evidence. Two channels are genuinely exercised. An ambiguous timeout is not marked failed and blindly retried.
 
