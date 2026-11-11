@@ -4,6 +4,8 @@
 
 The owner authorized implementation on 11 November 2026. Build and verify the draft-only MVP, make small commits and push working milestones. Live OAuth client registration, connecting accounts, editing real drafts, deployment, spending and contest submission still require their own authorization.
 
+Patchwork was submitted to Buffer Commit by the owner on 11 November 2026, corroborated by the organizer receipt and the owner's project identification. Submission is final; do not create a duplicate entry or treat the historical pre-submission checklists as pending submission instructions. Keep the app publicly available through at least 30 November; judging starts 16 November and winners are announced 7 December. See [submission status](docs/contest/submission-checklist.md). This status update grants no new app, account, spending or credential permissions.
+
 ## Read first
 
 - README.md and docs/development/getting-started.md
