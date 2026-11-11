@@ -18,7 +18,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const states = request.nextUrl.searchParams.getAll('state');
     if (!id || states.length !== 1 || !/^[A-Za-z0-9_-]{43}$/.test(states[0])) return redirect('error');
 
-    const attempt = store.takeOAuth(id, states[0], Date.now());
+    const attempt = await store.transaction(transaction => transaction.takeOAuth(id, states[0], Date.now()));
     if (!attempt) return redirect('error');
     const errors = request.nextUrl.searchParams.getAll('error');
     if (errors.length) return redirect(errors.length === 1 && errors[0] === 'access_denied' ? 'denied' : 'error');
@@ -29,8 +29,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const token = await exchangeOAuthCode(oauth, codes[0], verifier);
     const account = admitBufferAccount(await new BufferAdapter(token.accessToken).account(), access);
     if (!account) return redirect('restricted');
-    const newId = service.connect(id, seal(token.accessToken, `buffer:${account.id}`), token.expiresAt, account);
-    const session = store.getSession(newId, Date.now());
+    const newId = await service.connect(id, seal(token.accessToken, `buffer:${account.id}`), token.expiresAt, account);
+    const session = await store.getSession(newId, Date.now());
     if (!session) return redirect('error');
     const response = redirect('connected');
     setSessionCookie(request, response, newId, session.expiresAt);

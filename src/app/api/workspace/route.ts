@@ -4,7 +4,9 @@ import { acceptsOAuthOrigin, privateHeaders, readSessionId, requestOrigin, setSe
 import { WorkspaceError } from '../../../server/campaigns/service.ts';
 
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 const maxRequestBytes = 16 * 1024;
+const initialSampleActions = new Set(['preview', 'bind', 'unbind', 'remove-draft', 'delete-campaign']);
 
 function failure(status: number, error: string): NextResponse {
   return NextResponse.json({ error }, { status, headers: privateHeaders });
@@ -16,27 +18,36 @@ function report(error: unknown): NextResponse {
     : failure(500, 'Patchwork could not load this workspace. Try again.');
 }
 
-function respond(request: NextRequest, workspace: Workspace, newId?: string): NextResponse {
+async function respond(request: NextRequest, workspace: Workspace, newId?: string): Promise<NextResponse> {
   const { oauth, store } = workspaceRuntime();
   const configured = Boolean(oauth && acceptsOAuthOrigin(request, oauth.redirectUri));
   const response = NextResponse.json({ ...workspace, configured }, { headers: privateHeaders });
   if (newId) {
-    const session = store.getSession(newId, Date.now());
+    const session = await store.getSession(newId, Date.now());
     if (!session) return failure(401, 'Your workspace session expired. Reload to start again.');
     setSessionCookie(request, response, newId, session.expiresAt);
   }
   return response;
 }
 
-export function GET(request: NextRequest): NextResponse {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const { store, service } = workspaceRuntime();
-    const now = Date.now();
-    store.prune(now);
+    const { service, prune, lazySample } = workspaceRuntime();
     const id = readSessionId(request);
-    if (id && store.getSession(id, now)) return respond(request, service.view(id));
-    const newId = service.createSample();
-    return respond(request, service.view(newId), newId);
+    if (id || !lazySample) await prune(Date.now());
+    if (id) {
+      try { return await respond(request, await service.view(id)); }
+      catch (error) {
+        if (!(error instanceof WorkspaceError) || error.status !== 401) throw error;
+      }
+    }
+    if (lazySample) {
+      const response = await respond(request, service.sample());
+      if (id) setSessionCookie(request, response, id, 0);
+      return response;
+    }
+    const newId = await service.createSample();
+    return await respond(request, await service.view(newId), newId);
   } catch (error) {
     return report(error);
   }
@@ -80,17 +91,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return failure(403, 'Open Patchwork to change this workspace.');
   }
   try {
-    const { store, service } = workspaceRuntime();
+    const { store, service, prune, lazySample } = workspaceRuntime();
     const id = readSessionId(request);
-    if (!id || !store.getSession(id, Date.now())) return failure(401, 'Your workspace session expired. Reload to start again.');
+    if ((!id && !lazySample) || (id && !await store.getSession(id, Date.now()))) {
+      return failure(401, 'Your workspace session expired. Reload to start again.');
+    }
 
     const input = await readAction(request);
     if (input instanceof NextResponse) return input;
-    if (input.action === 'disconnect' || input.action === 'sample') {
-      const newId = service.disconnect(id);
-      return respond(request, service.view(newId), newId);
+    if (!id) {
+      if (input.action === 'sample') return await respond(request, service.sample());
+      if (typeof input.action !== 'string' || !initialSampleActions.has(input.action)) {
+        return failure(400, 'Choose a valid sample action.');
+      }
+      await prune(Date.now());
+      const newId = await service.createSample();
+      return await respond(request, await service.act(newId, input), newId);
     }
-    return respond(request, await service.act(id, input));
+    if (input.action === 'disconnect' || input.action === 'sample') {
+      const newId = await service.disconnect(id);
+      return await respond(request, await service.view(newId), newId);
+    }
+    return await respond(request, await service.act(id, input));
   } catch (error) {
     return report(error);
   }

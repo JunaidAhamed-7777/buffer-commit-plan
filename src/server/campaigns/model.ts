@@ -3,7 +3,7 @@ import { bindPhrase } from '../../domain/patch.ts';
 import type { Binding, ReviewItem } from '../../domain/patch.ts';
 import type { Fact, OperationItem, Review, Workspace } from '../../domain/workspace.ts';
 import type { EligibleDraft } from '../buffer/adapter.ts';
-import type { WorkspaceStore } from '../storage/store.ts';
+import type { WorkspaceQueries } from '../storage/store.ts';
 
 export type DraftSnapshot = EligibleDraft;
 export type PlannedItem = ReviewItem & { eligibility: string };
@@ -53,10 +53,10 @@ export function digest(value: string) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-export function save(store: WorkspaceStore<WorkspaceData>, key: string, data: WorkspaceData) {
+export function save(store: WorkspaceQueries<WorkspaceData>, key: string, data: WorkspaceData) {
   data.revision += 1;
   const lifetime = data.mode === 'sample' ? SAMPLE_LIFETIME : CAMPAIGN_LIFETIME;
-  store.putWorkspace(key, data, Date.now() + lifetime);
+  return store.putWorkspace(key, data, Date.now() + lifetime);
 }
 
 const venue = { id: 'venue', label: 'Venue', value: 'Studio 4' };

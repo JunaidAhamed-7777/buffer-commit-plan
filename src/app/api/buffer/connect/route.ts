@@ -18,7 +18,7 @@ function fromWorkspace(request: NextRequest): boolean {
   }
 }
 
-export function GET(request: NextRequest): NextResponse {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const failure = () => new NextResponse(null, { status: 303, headers: { ...privateHeaders, Location: '/?connection=error' } });
   if (!fromWorkspace(request)) return failure();
 
@@ -26,20 +26,22 @@ export function GET(request: NextRequest): NextResponse {
     const { store, service, oauth, seal } = workspaceRuntime();
     if (!oauth || !acceptsOAuthOrigin(request, oauth.redirectUri)) return failure();
 
-    const now = Date.now();
     const id = readSessionId(request);
-    const session = id ? store.getSession(id, now) : undefined;
+    const session = id ? await store.getSession(id, Date.now()) : undefined;
     if (session?.accountId) return failure();
-    const sessionId = session && id ? id : service.createSample();
-    const active = store.getSession(sessionId, now);
-    if (!active) return failure();
-
+    const sessionId = session && id ? id : await service.createSample();
     const attempt = beginOAuth(oauth);
-    store.putOAuth(sessionId, {
-      state: attempt.state,
-      verifier: seal(attempt.verifier, `oauth:${sessionId}`),
-      expiresAt: Math.min(attempt.expiresAt, active.expiresAt),
+    const active = await store.transaction(async transaction => {
+      const current = await transaction.getSession(sessionId, Date.now());
+      if (!current || current.accountId) return;
+      await transaction.putOAuth(sessionId, {
+        state: attempt.state,
+        verifier: seal(attempt.verifier, `oauth:${sessionId}`),
+        expiresAt: Math.min(attempt.expiresAt, current.expiresAt),
+      });
+      return current;
     });
+    if (!active) return failure();
     const response = NextResponse.redirect(attempt.url, { status: 303, headers: privateHeaders });
     if (!session) setSessionCookie(request, response, sessionId, active.expiresAt);
     return response;

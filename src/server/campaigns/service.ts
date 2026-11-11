@@ -4,7 +4,7 @@ import type { Draft } from '../../domain/patch.ts';
 import type { Workspace } from '../../domain/workspace.ts';
 import type { BufferAdapter } from '../buffer/adapter.ts';
 import { expireBatch, runBatch, reconcileWrite, stopBatch } from '../operations/apply.ts';
-import type { Session, WorkspaceStore } from '../storage/store.ts';
+import type { Session, WorkspaceQueries, WorkspaceStorage } from '../storage/store.ts';
 import { digest, newWorkspace, observeListedDrafts, SAMPLE_LIFETIME, save } from './model.ts';
 import type { DraftSnapshot, WorkspaceData } from './model.ts';
 
@@ -55,83 +55,94 @@ function range(input: Record<string, unknown>) {
 }
 
 export class WorkspaceService {
-  private readonly store: WorkspaceStore<WorkspaceData>;
+  private readonly store: WorkspaceStorage<WorkspaceData>;
   private readonly provider: (sealedToken: string, accountId: string) => DraftProvider;
   private readonly configured: boolean;
+  private readonly access?: { accountId: string; organizationId: string };
 
   constructor(
-    store: WorkspaceStore<WorkspaceData>,
+    store: WorkspaceStorage<WorkspaceData>,
     provider: (sealedToken: string, accountId: string) => DraftProvider,
     configured: boolean,
+    access?: { accountId: string; organizationId: string },
   ) {
     this.store = store;
     this.provider = provider;
     this.configured = configured;
+    this.access = access;
   }
 
-  createSample(): string {
+  async createSample(): Promise<string> {
     const id = randomBytes(32).toString('base64url');
     const workspaceKey = `sample:${digest(id)}`;
-    this.store.transaction(() => {
+    await this.store.transaction(async store => {
       const expiresAt = Date.now() + SAMPLE_LIFETIME;
-      this.store.putWorkspace(workspaceKey, newWorkspace('sample'), expiresAt);
-      this.store.putSession(id, { workspaceKey, expiresAt });
+      await store.putWorkspace(workspaceKey, newWorkspace('sample'), expiresAt);
+      await store.putSession(id, { workspaceKey, expiresAt });
     });
     return id;
   }
 
-  connect(id: string, sealedToken: string, expiresAt: number, account: { id: string; organizations: { id: string; name: string }[] }): string {
-    return this.store.transaction(() => {
-      const { session, data } = this.current(id);
+  connect(id: string, sealedToken: string, expiresAt: number, account: { id: string; organizations: { id: string; name: string }[] }): Promise<string> {
+    return this.store.transaction(async store => {
+      const { session, data } = await this.current(store, id);
       if (data.batch?.leaseUntil || expiresAt <= Date.now()) throw new WorkspaceError('Start the Buffer connection again.', 409);
       const nextId = randomBytes(32).toString('base64url');
       const workspaceKey = `buffer:${digest(account.id)}`;
-      const previous = this.store.getWorkspace(workspaceKey);
+      const previous = await store.getWorkspace(workspaceKey, Date.now());
       const expired = previous && expireBatch(previous);
-      if (!previous) save(this.store, workspaceKey, newWorkspace('buffer'));
+      if (!previous) await save(store, workspaceKey, newWorkspace('buffer'));
       else if (previous.organizationId && !account.organizations.some(org => org.id === previous.organizationId)) {
         if (previous.batch?.leaseUntil) throw new WorkspaceError('Wait for the current changes to finish, then reconnect.', 409);
-        save(this.store, workspaceKey, newWorkspace('buffer'));
+        await save(store, workspaceKey, newWorkspace('buffer'));
       } else if (expired || previous.review) {
         delete previous.review;
-        save(this.store, workspaceKey, previous);
+        await save(store, workspaceKey, previous);
       }
-      this.store.deleteSession(id);
-      if (data.mode === 'sample') this.store.deleteWorkspace(session.workspaceKey);
-      this.store.putSession(nextId, { workspaceKey, accountId: account.id, organizations: account.organizations, token: sealedToken, expiresAt });
+      await store.deleteSession(id);
+      if (data.mode === 'sample') await store.deleteWorkspace(session.workspaceKey);
+      await store.putSession(nextId, { workspaceKey, accountId: account.id, organizations: account.organizations, token: sealedToken, expiresAt });
       return nextId;
     });
   }
 
-  disconnect(id: string): string {
-    this.store.transaction(() => {
-      const { session, data } = this.current(id);
+  async disconnect(id: string): Promise<string> {
+    await this.store.transaction(async store => {
+      const { session, data } = await this.current(store, id);
       const actor = digest(id);
       if (data.batch?.actor === actor && data.batch.leaseUntil) {
         stopBatch(data.batch);
-        save(this.store, session.workspaceKey, data);
+        await save(store, session.workspaceKey, data);
       }
       if (data.review?.actor === actor) {
         delete data.review;
-        save(this.store, session.workspaceKey, data);
+        await save(store, session.workspaceKey, data);
       }
-      this.store.deleteSession(id);
-      if (data.mode === 'sample') this.store.deleteWorkspace(session.workspaceKey);
+      await store.deleteSession(id);
+      if (data.mode === 'sample') await store.deleteWorkspace(session.workspaceKey);
     });
     return this.createSample();
   }
 
-  view(id: string): Workspace {
-    const { session, data } = this.store.transaction(() => this.current(id));
+  sample(): Workspace {
+    return this.project(newWorkspace('sample'));
+  }
+
+  async view(id: string): Promise<Workspace> {
+    const { session, data } = await this.store.transaction(store => this.current(store, id));
+    return this.project(data, session, digest(id));
+  }
+
+  private project(data: WorkspaceData, session?: Session, actor?: string): Workspace {
     const { batch } = data;
-    const savedReview = data.review?.actor === digest(id) && data.review.expiresAt > Date.now() ? data.review : undefined;
+    const savedReview = data.review && data.review.actor === actor && data.review.expiresAt > Date.now() ? data.review : undefined;
     const current = new Set(batch?.items.filter(item => item.status === 'unknown').map(item => item.draftId));
     const unresolved = data.pending.filter(write => write.organizationId === data.organizationId
       && write.receipt.status === 'unknown' && !current.has(write.planned.draftId)).map(write => write.receipt);
     return {
       mode: data.mode,
       configured: this.configured,
-      connection: session.organizations ? { organizations: session.organizations, organizationId: data.organizationId } : undefined,
+      connection: session?.organizations ? { organizations: session.organizations, organizationId: data.organizationId } : undefined,
       available: data.available?.map(publicDraft),
       availableFetchedAt: data.availableFetchedAt,
       nextCursor: data.nextCursor,
@@ -146,18 +157,21 @@ export class WorkspaceService {
   }
 
   async act(id: string, input: Record<string, unknown>): Promise<Workspace> {
-    const { session, data } = this.store.transaction(() => this.current(id));
+    const { session, data } = await this.store.transaction(store => this.current(store, id));
     const action = input.action;
-    if (action === 'apply' && data.batch && data.batch.reviewId === input.reviewId) return this.view(id);
+    const actor = digest(id);
+    if (action === 'apply' && data.batch?.actor === actor && data.batch.reviewId === input.reviewId) return this.view(id);
     if (data.batch?.leaseUntil && action !== 'cancel') throw new WorkspaceError('Wait for the current changes to finish.', 409);
     const key = session.workspaceKey;
-    const mutate = (change: (fresh: WorkspaceData) => void) => {
-      this.store.transaction(() => {
-        const { data: fresh } = this.current(id);
+    const mutate = (change: (fresh: WorkspaceData, store: WorkspaceQueries<WorkspaceData>) => void | Promise<void>) => {
+      return this.store.transaction(async store => {
+        const { data: fresh } = await this.current(store, id);
+        if (action === 'apply' && fresh.batch?.actor === actor && fresh.batch.reviewId === input.reviewId) return false;
         if (fresh.revision !== data.revision) throw new WorkspaceError('The workspace changed. Reload it and try again.', 409);
         delete fresh.notice;
-        change(fresh);
-        save(this.store, key, fresh);
+        await change(fresh, store);
+        await save(store, key, fresh);
+        return true;
       });
     };
     const live = () => {
@@ -179,7 +193,7 @@ export class WorkspaceService {
         const organizationId = textField(input, 'id');
         if (!session.organizations?.some(org => org.id === organizationId)) throw new WorkspaceError('Choose one of your Buffer organizations.', 403);
         const result = await live().drafts(organizationId);
-        mutate(fresh => {
+        await mutate(fresh => {
           if (fresh.organizationId !== organizationId) {
             const { facts, drafts, bindings } = newWorkspace('buffer');
             Object.assign(fresh, { organizationId, facts, drafts, bindings, review: undefined, batch: undefined });
@@ -194,7 +208,7 @@ export class WorkspaceService {
       case 'load-more': {
         if (!data.nextCursor) break;
         const result = await live().drafts(organization(), data.nextCursor);
-        mutate(fresh => {
+        await mutate(fresh => {
           const merged = new Map([...(fresh.available ?? []), ...result.drafts].map(draft => [draft.id, draft]));
           fresh.available = [...merged.values()].slice(0, MAX_LISTED);
           fresh.availableFetchedAt = new Date().toISOString();
@@ -211,7 +225,7 @@ export class WorkspaceService {
         const all = new Map(data.drafts.map(draft => [draft.id, draft]));
         for (const draft of selected) if (!all.has(draft.id)) all.set(draft.id, draft);
         if (all.size > MAX_DRAFTS) throw new WorkspaceError('Keep up to ten drafts in the campaign.');
-        mutate(fresh => { fresh.drafts = [...all.values()]; delete fresh.review; });
+        await mutate(fresh => { fresh.drafts = [...all.values()]; delete fresh.review; });
         break;
       }
       case 'bind':
@@ -223,7 +237,7 @@ export class WorkspaceService {
         if (action === 'unbind') {
           const selected = data.bindings.find(link => link.draftId === draft.id && link.factId === input.factId && link.start === start && link.end === end);
           if (!selected) throw new WorkspaceError('This link changed. Reload the draft and try again.', 409);
-          mutate(fresh => {
+          await mutate(fresh => {
             fresh.bindings = fresh.bindings.filter(link => link.draftId !== draft.id || link.start !== start || link.end !== end || link.factId !== input.factId);
             delete fresh.review;
           });
@@ -234,7 +248,7 @@ export class WorkspaceService {
         let link;
         try { link = bindPhrase(draft, fact.id, start, end, data.bindings); }
         catch (error) { throw new WorkspaceError((error as Error).message); }
-        mutate(fresh => {
+        await mutate(fresh => {
           fresh.bindings.push(link);
           fresh.facts = fresh.facts.map(item => item.id === fact.id && !item.value ? { ...item, value: link.text } : item);
           delete fresh.review;
@@ -249,7 +263,7 @@ export class WorkspaceService {
         try { items = planPatch(data.drafts, data.bindings, fact.id, replacement, 10_000); }
         catch (error) { throw new WorkspaceError((error as Error).message); }
         if (!items.length) throw new WorkspaceError('No linked phrases would change.');
-        mutate(fresh => {
+        await mutate(fresh => {
           fresh.review = { id: randomUUID(), factId: fact.id, replacement, items, actor: digest(id), expiresAt: Date.now() + REVIEW_LIFETIME };
         });
         break;
@@ -265,11 +279,12 @@ export class WorkspaceService {
         const provider = data.mode === 'buffer' ? live() : undefined;
         const organizationId = provider ? organization() : undefined;
         const batchId = randomUUID();
-        mutate(fresh => {
+        const claimed = await mutate(fresh => {
+          if (review.expiresAt <= Date.now()) throw new WorkspaceError('This review changed or expired. Preview the edits again.', 409);
           fresh.batch = {
             id: batchId,
             reviewId: review.id,
-            actor: digest(id),
+            actor,
             organizationId,
             factId: review.factId,
             replacement: review.replacement,
@@ -280,11 +295,18 @@ export class WorkspaceService {
           };
           delete fresh.review;
         });
-        await runBatch(this.store, key, id, batchId, provider);
+        if (claimed) await runBatch(this.store, key, id, batchId, provider);
         break;
       }
       case 'cancel': {
-        if (data.batch?.leaseUntil) mutate(fresh => stopBatch(fresh.batch!));
+        if (data.batch?.leaseUntil) {
+          await this.store.transaction(async store => {
+            const { data: fresh } = await this.current(store, id);
+            if (!fresh.batch?.leaseUntil || fresh.batch.id !== data.batch?.id) return;
+            stopBatch(fresh.batch);
+            await save(store, key, fresh);
+          });
+        }
         break;
       }
       case 'reconcile': {
@@ -299,7 +321,7 @@ export class WorkspaceService {
         if (!old) throw new WorkspaceError('Choose a draft from this campaign.');
         if (data.mode === 'sample') break;
         const observed = await live().draft(organization(), draftId);
-        mutate(fresh => {
+        await mutate(fresh => {
           delete fresh.review;
           const changed = !observed || observed.text !== old.text || observed.eligibility !== old.eligibility;
           if (!changed) { fresh.notice = 'The draft still matches the saved copy.'; return; }
@@ -312,7 +334,7 @@ export class WorkspaceService {
       }
       case 'remove-draft': {
         const draftId = textField(input, 'draftId');
-        mutate(fresh => {
+        await mutate(fresh => {
           fresh.drafts = fresh.drafts.filter(draft => draft.id !== draftId);
           fresh.bindings = fresh.bindings.filter(link => link.draftId !== draftId);
           delete fresh.review;
@@ -320,10 +342,10 @@ export class WorkspaceService {
         break;
       }
       case 'delete-campaign': {
-        mutate(fresh => {
+        await mutate(async (fresh, store) => {
           const empty = newWorkspace(fresh.mode);
           for (const write of fresh.pending) {
-            if (write.completed) this.store.clearGuard(write.organizationId, write.planned.draftId, write.operationId);
+            if (write.completed) await store.clearGuard(write.organizationId, write.planned.draftId, write.operationId);
           }
           Object.assign(fresh, { drafts: [], bindings: [], facts: empty.facts, available: undefined,
             availableFetchedAt: undefined, nextCursor: undefined, review: undefined, batch: undefined, pending: [] });
@@ -337,14 +359,19 @@ export class WorkspaceService {
     return this.view(id);
   }
 
-  private current(id: string): { session: Session; data: WorkspaceData } {
-    const session = this.store.getSession(id, Date.now());
-    const data = session && this.store.getWorkspace(session.workspaceKey);
+  private async current(store: WorkspaceQueries<WorkspaceData>, id: string): Promise<{ session: Session; data: WorkspaceData }> {
+    const now = Date.now();
+    const session = await store.getSession(id, now);
+    const data = session && await store.getWorkspace(session.workspaceKey, now);
     if (!session || !data) throw new WorkspaceError('This session ended. Reload the workspace to continue.', 401);
+    if (session.accountId && (!this.configured || (this.access && (session.accountId !== this.access.accountId
+      || session.organizations?.length !== 1 || session.organizations[0].id !== this.access.organizationId)))) {
+      throw new WorkspaceError('This session ended. Reconnect Buffer to continue.', 401);
+    }
     if (data.organizationId && !session.organizations?.some(org => org.id === data.organizationId)) {
       throw new WorkspaceError('Reconnect Buffer to open this organization.', 403);
     }
-    if (expireBatch(data)) save(this.store, session.workspaceKey, data);
+    if (expireBatch(data)) await save(store, session.workspaceKey, data);
     return { session, data };
   }
 }

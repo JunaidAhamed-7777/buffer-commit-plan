@@ -4,7 +4,7 @@ The local implementation follows this design. The first authorized Buffer check 
 
 ## Bounded implementation shape
 
-One Next.js application serves the React interface and the TypeScript Buffer adapter. SQLite stores workspaces, sessions and write guards. A hosted live connection requires a persistent volume shared by the app processes using the database. [Setup](../development/getting-started.md)
+One Next.js application serves the React interface and the TypeScript Buffer adapter. Local installations use SQLite. Vercel uses a shared PostgreSQL database for workspaces, sessions and write guards. Short database transactions serialize changes across function instances. Buffer requests run outside those transactions. [Setup](../development/getting-started.md)
 
 The browser handles phrase selection and diff rendering. The server owns identity, authorization, fresh reads, patch validation, mutation execution, and receipts. The browser must not hold provider tokens or choose an arbitrary organization/post outside the authenticated membership boundary.
 

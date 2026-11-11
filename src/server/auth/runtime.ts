@@ -4,6 +4,7 @@ import type { NextRequest, NextResponse } from 'next/server';
 import { BufferAdapter } from '../buffer/adapter.ts';
 import type { WorkspaceData } from '../campaigns/model.ts';
 import { WorkspaceService } from '../campaigns/service.ts';
+import { PostgresWorkspaceStore } from '../storage/postgres.ts';
 import { WorkspaceStore } from '../storage/store.ts';
 import { bufferAccess } from './access.ts';
 import { getOAuthConfig } from './oauth.ts';
@@ -25,14 +26,19 @@ function tokenKey(): Buffer | undefined {
 
 function createRuntime() {
   const explicitPath = process.env.PATCHWORK_DB_PATH?.trim();
-  const store = new WorkspaceStore<WorkspaceData>(explicitPath || '.patchwork/patchwork.sqlite');
+  const vercel = process.env.VERCEL === '1';
+  const databaseUrl = (vercel || !explicitPath) ? process.env.DATABASE_URL?.trim() : undefined;
+  const store = databaseUrl
+    ? new PostgresWorkspaceStore<WorkspaceData>(databaseUrl)
+    : new WorkspaceStore<WorkspaceData>(vercel ? ':memory:' : explicitPath || '.patchwork/patchwork.sqlite');
   const key = tokenKey();
   const config = getOAuthConfig();
   const redirect = config ? new URL(config.redirectUri) : undefined;
   const access = redirect ? bufferAccess(redirect) : undefined;
   const hostedProduction = process.env.NODE_ENV === 'production' && redirect && access !== null;
-  const oauth = config && key && redirect?.pathname === '/api/buffer/callback' && explicitPath !== ':memory:' && access !== undefined
-    && (!hostedProduction || (redirect.protocol === 'https:' && explicitPath && isAbsolute(explicitPath)))
+  const oauth = config && key && redirect?.pathname === '/api/buffer/callback' && access !== undefined
+    && (!vercel || (databaseUrl && process.env.VERCEL_ENV === 'production'))
+    && (databaseUrl || (explicitPath !== ':memory:' && (!hostedProduction || (explicitPath && isAbsolute(explicitPath)))))
     ? config : undefined;
 
   function seal(value: string, context: string): string {
@@ -61,8 +67,16 @@ function createRuntime() {
   const service = new WorkspaceService(store, (sealedToken, accountId) => {
     if (!oauth) throw new Error('The Buffer connection is unavailable.');
     return new BufferAdapter(unseal(sealedToken, `buffer:${accountId}`));
-  }, Boolean(oauth));
-  return { store, service, oauth, access, seal, unseal };
+  }, Boolean(oauth), access ?? undefined);
+  let nextPrune = 0;
+  async function prune(now: number) {
+    if (now < nextPrune) return;
+    nextPrune = now + 60_000;
+    try { await store.transaction(transaction => transaction.prune(now)); }
+    catch (error) { nextPrune = 0; throw error; }
+  }
+
+  return { store, service, oauth, access, seal, unseal, prune, lazySample: vercel && Boolean(databaseUrl) };
 }
 
 const processRuntime = globalThis as typeof globalThis & { patchworkRuntime?: ReturnType<typeof createRuntime> };

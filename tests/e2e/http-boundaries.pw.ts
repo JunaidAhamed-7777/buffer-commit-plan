@@ -24,8 +24,10 @@ test('concurrent approval requests share one receipt and cannot cross sessions',
     const burst = await Promise.all(Array.from({ length: 16 }, () => post(request, origin, approval)));
     burst.forEach(response => expect(response.ok()).toBe(true));
     const results = await Promise.all(burst.map(async response => await response.json() as Workspace));
-    expect(results[0].operation?.items.map(item => item.status)).toEqual(['verified', 'verified', 'verified']);
+    expect(results[0].operation?.id).toBeDefined();
     expect(new Set(results.map(result => result.operation?.id)).size).toBe(1);
+    const finished = await (await request.get('/api/workspace')).json() as Workspace;
+    expect(finished.operation?.items.map(item => item.status)).toEqual(['verified', 'verified', 'verified']);
     const after = await (await other.get('/api/workspace')).json() as Workspace;
     expect(after.drafts).toEqual(before.drafts);
     expect(after.operation).toBeUndefined();
