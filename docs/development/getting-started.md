@@ -17,7 +17,9 @@ Open [localhost:3000](http://localhost:3000). The sample works without Buffer se
 2. Register a confidential client named Patchwork. Allow `account:read`, `posts:read`, and `posts:write`, and add `https://localhost:3000/api/buffer/callback` as its redirect. Buffer requires HTTPS for localhost too. [Buffer registration guide](https://developers.buffer.com/guides/building-apps.html#registering-an-app-client)
 3. From the project directory, run `./scripts/start-buffer-live.ps1` in your own PowerShell. It uses OpenSSL from Git for Windows or PATH. Find the existing client under [Buffer Settings → API](https://publish.buffer.com/settings/api) → **App Clients**. Enter its ID and paste the secret into the masked prompt. Leave PowerShell open while you test.
 
-Once the launcher says Patchwork is ready, open [the HTTPS workspace](https://localhost:3000). The launcher prints the fingerprint of its temporary certificate and leaves system trust settings unchanged. If the browser shows a certificate screen, verify the localhost address and fingerprint before deciding whether to proceed. Choose **Connect Buffer → Continue to Buffer**, then review the permissions on Buffer’s consent screen. When the connection succeeds, Patchwork shows **Disconnect**. After restarting the launcher, disconnect and reconnect if the previous session is still open.
+Once the launcher says Patchwork is ready, open [the HTTPS workspace](https://localhost:3000). The launcher creates a fresh self-signed certificate for localhost each time it starts. Browsers may show a privacy warning because they do not trust that certificate by default. Check the address and compare the browser’s certificate fingerprint with the SHA-256 fingerprint printed in PowerShell before deciding whether to proceed.
+
+Choose **Connect Buffer → Continue to Buffer**, then review the permissions on Buffer’s consent screen. When the connection succeeds, Patchwork shows **Disconnect**. After restarting the launcher, disconnect and reconnect if the previous session is still open.
 
 ## Test one real draft
 
