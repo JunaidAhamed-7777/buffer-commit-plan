@@ -43,7 +43,7 @@ Open [localhost:3000](http://localhost:3000) to try the sample. It starts with t
 
 Patchwork works with eligible, unscheduled plain-text Buffer drafts. Before sending an edit, it checks the draft text, status, and edit permissions again. It marks a live edit **Verified** after Buffer confirms the edit and the saved text matches the review. Buffer does not document a version check on `editPost`, so an edit made in Buffer can still land between the check and the write.
 
-The local workbench changed the first of two identical phrases in a live Bluesky draft and verified the saved text in Buffer. The Vercel workbench also completed Buffer OAuth and read that draft. Live editing on a second channel is still unverified. [Test evidence](docs/evidence/README.md)
+The public Vercel workbench completed Buffer OAuth and changed `Studio 9` to `Studio 12` in one Bluesky test draft. Patchwork returned a **Verified** receipt. Buffer showed the exact reviewed text under **Unscheduled**, including the unlinked `Studio 4` in the next sentence. Live editing on a second channel remains unverified. [Test evidence](docs/evidence/README.md#vercel-verification-on-11-november-2026)
 
 ## Development
 
