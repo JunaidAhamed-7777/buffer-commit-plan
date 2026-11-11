@@ -4,7 +4,7 @@
 
 A correction desk for Buffer drafts. Link a venue, date label or registration URL across drafts, then review the exact edits before applying them.
 
-The local app includes a sample workspace and a configurable Buffer connection. Live OAuth, draft edits and hosted deployment still need verification.
+The workbench runs locally with a sample workspace and an optional Buffer connection. The public showcase runs the sample in the browser. A real Buffer sign-in and draft edit are the next [verification steps](docs/development/getting-started.md#test-one-real-draft).
 
 ## Project showcase
 
