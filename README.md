@@ -6,6 +6,12 @@ Patchwork is a correction desk for Buffer drafts. When a workshop moves from Stu
 
 The public workbench opens with fictional drafts. The hosted Buffer connection is available to the configured test operator.
 
+## Buffer Commit status
+
+**Submitted to Buffer Commit on 11 November 2026.** Junaid confirmed that he submitted Patchwork; the organizer receipt confirms submission. Submissions are final. Keep the app publicly available through at least **30 November 2026**. Judging starts **16 November** and winners are announced **7 December**; exact times/timezones were not specified. No award is confirmed. The exact submitted form fields and entry URL/ID have not been independently checked.
+
+[Submission record and remaining verification](docs/contest/submission-checklist.md)
+
 ## How it works
 
 The recordings use Patchwork’s built-in sample campaign.
