@@ -1,4 +1,4 @@
-# Patchwork
+# <img src="showcase/mark.svg" width="32" height="32" alt=""> Patchwork
 
 Patchwork is a correction desk for Buffer drafts. When a workshop moves from Studio 4 to Studio 9, link the venue in each draft, check the proposed edits, and send only the approved changes back to Buffer.
 
