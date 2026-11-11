@@ -6,6 +6,7 @@ The repository has local tests, simulated Buffer cases, a public sample demo and
 
 - The workbench build from `a9aa3bb` reached Ready on Vercel Hobby with Neon Free. The public home and privacy page returned HTTP 200. [Workbench](https://patchwork-workbench.vercel.app/) · [Privacy policy](https://patchwork-workbench.vercel.app/privacy)
 - A fresh sample session saved two selected changes, left the third draft intact, and created a secure session cookie. In a separate check, eight concurrent approvals returned the same operation and a second sample session could not reuse its review. The public callback rejected a request without matching OAuth state.
+- The operator approved consent at the registered production callback. Patchwork returned to the public domain in connected mode, loaded the configured organization and listed the existing Bluesky test draft with the verified text from the localhost edit. The hosted check read the draft without editing it.
 - All 42 Node tests passed with a disposable PostgreSQL 18 instance, including tests that use two independent pools. All seven Playwright tests, typecheck, and a clean production build passed.
 
 ## Live Buffer verification on 11 November 2026

@@ -20,7 +20,7 @@ A hosted working app, OAuth authentication with Buffer, successful real API use,
 
 ## Status and authorization
 
-Registration was confirmed on 10 November. The local app verified real Buffer authorization and a Bluesky draft edit on 11 November. The public showcase is live. Hosting the connected app and submitting the entry remain open. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
+Registration was confirmed on 10 November. The local workbench verified real Buffer authorization and a Bluesky draft edit on 11 November. The Vercel workbench verified OAuth and a draft read for the configured test operator. Submission remains open. [Test evidence](../evidence/README.md)
 
 The owner authorized implementation and repository pushes. Confirm OAuth access, suitable test drafts and the exact live edit before the integration check. Hosting, spending and final submission require separate authorization. [Current boundaries](../../AGENTS.md)
 

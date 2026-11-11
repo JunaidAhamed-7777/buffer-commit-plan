@@ -1,14 +1,14 @@
 # Submission evidence checklist
 
-The local app verified real OAuth and one Bluesky draft edit. The public showcase is live. Hosting the connected app and submitting the entry remain open. Registration was previously confirmed. [Live test evidence](../evidence/README.md#live-buffer-verification-on-11-november-2026)
+The local workbench verified real OAuth and one Bluesky draft edit. The Vercel workbench is live and verified public OAuth and draft reads for the configured test operator. Registration was confirmed. Submission remains open. [Test evidence](../evidence/README.md)
 
 ## Before a future final-submit decision
 
 - [ ] Recheck official rules, deadline and any organizer updates.
 - [ ] Verify personal eligibility and rights to all content/dependencies.
 - [ ] Record only this project's work performed in the permitted window.
-- [ ] Confirm the hosted app works from an ordinary fresh browser.
-- [x] Confirm real Buffer OAuth in the local workbench.
+- [x] Confirm the hosted workbench and sample open from a fresh browser.
+- [x] Confirm real Buffer OAuth in the local and Vercel workbenches.
 - [x] Demonstrate successful API editing and read-back on one authorized Bluesky draft.
 - [ ] Verify the exact scopes, redirect URI and public privacy/contact information.
 - [ ] Review security, failure cases, unsupported-content exclusions and limitations.
