@@ -2,7 +2,9 @@
 
 Patchwork is a correction desk for Buffer drafts. When a workshop moves from Studio 4 to Studio 9, link the venue in each draft, check the proposed edits, and send only the approved changes back to Buffer.
 
-[Try the sample](https://patchwork-showcase.vercel.app/) · [Privacy policy](https://patchwork-showcase.vercel.app/privacy.html)
+[Open Patchwork](https://patchwork-workbench.vercel.app/) · [Project showcase](https://patchwork-showcase.vercel.app/) · [Privacy policy](https://patchwork-workbench.vercel.app/privacy)
+
+The public workbench opens with fictional drafts. The hosted Buffer connection is available to the configured test operator.
 
 ## How it works
 
